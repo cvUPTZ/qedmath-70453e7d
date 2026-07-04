@@ -38,6 +38,7 @@
   --color-ring-offset-background: var(--background);
   --color-brand: var(--brand);
   --color-brand-foreground: var(--brand-foreground);
+  --color-brand-accent: var(--brand-accent);
   --color-ink: var(--ink);
   --color-parchment: var(--parchment);
   --color-chart-1: var(--chart-1);
