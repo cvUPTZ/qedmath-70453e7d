@@ -133,6 +133,10 @@ function AdminList() {
         <div className="mt-6 overflow-hidden rounded-2xl border border-border bg-card">
           {q.isLoading ? (
             <div className="p-8 text-center text-sm text-muted-foreground">جارٍ التحميل...</div>
+          ) : q.error ? (
+            <div className="p-8 text-center text-sm text-destructive">
+              حدث خطأ أثناء تحميل الطلبات: {(q.error as Error).message}
+            </div>
           ) : filtered.length === 0 ? (
             <div className="p-12 text-center text-sm text-muted-foreground">لا توجد طلبات</div>
           ) : (

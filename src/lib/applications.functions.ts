@@ -191,8 +191,7 @@ export const listApplications = createServerFn({ method: "GET" })
     });
     if (!isAdmin) throw new Error("Forbidden");
 
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { data, error } = await supabaseAdmin
+    const { data, error } = await context.supabase
       .from("applications")
       .select(
         "id, full_name, email, wilaya, years_experience, levels_taught, status, ai_score, created_at",
@@ -211,10 +210,9 @@ export const getApplication = createServerFn({ method: "POST" })
       _role: "admin",
     });
     if (!isAdmin) throw new Error("Forbidden");
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const [app, notes] = await Promise.all([
-      supabaseAdmin.from("applications").select("*").eq("id", data.id).single(),
-      supabaseAdmin
+      context.supabase.from("applications").select("*").eq("id", data.id).single(),
+      context.supabase
         .from("application_notes")
         .select("*")
         .eq("application_id", data.id)
@@ -225,7 +223,7 @@ export const getApplication = createServerFn({ method: "POST" })
     // Signed URLs for files
     const signedUrl = async (path: string | null) => {
       if (!path) return null;
-      const { data: s } = await supabaseAdmin.storage
+      const { data: s } = await context.supabase.storage
         .from("applications")
         .createSignedUrl(path, 3600);
       return s?.signedUrl ?? null;
