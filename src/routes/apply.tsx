@@ -281,7 +281,6 @@ function ApplyPage() {
         {step === 4 && <Stage5 form={form} update={update} />}
         {step === 5 && <Stage6 form={form} update={update} />}
         {step === 6 && <Stage7 form={form} update={update} />}
-        {step === 7 && <Stage8 form={form} update={update} />}
 
         <div className="mt-10 flex items-center justify-between gap-3 border-t border-border pt-6">
           <button
