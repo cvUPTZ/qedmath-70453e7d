@@ -104,7 +104,6 @@ const STEPS = [
   "الرؤية",
   "التعاون",
   "الاختبار العملي",
-  "الملفات",
 ];
 
 // Practical test questions (QED-style)
