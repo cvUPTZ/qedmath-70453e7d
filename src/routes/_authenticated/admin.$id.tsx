@@ -9,7 +9,7 @@ import {
   addNote,
 } from "@/lib/applications.functions";
 import { ArrowRight, FileText, MessageSquarePlus } from "lucide-react";
-import { statusLabel, statusTone } from "./admin";
+import { statusLabel, statusTone } from "./admin.index";
 
 export const Route = createFileRoute("/_authenticated/admin/$id")({
   component: AdminDetail,
