@@ -196,9 +196,6 @@ function ApplyPage() {
         }
         return null;
       }
-      case 7:
-        if (!form.cv_path) return "رفع السيرة الذاتية إلزامي";
-        return null;
     }
     return null;
   };
