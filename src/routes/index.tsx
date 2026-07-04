@@ -80,16 +80,17 @@ function LandingPage() {
                 to="/apply"
                 className="group inline-flex items-center gap-4 bg-ink px-8 py-4 text-sm font-medium tracking-wide text-parchment transition-colors hover:bg-brand-accent"
               >
-                ابدأ الرحلة العلمية
+                قدِّم ترشُّحك للمجلس التربوي
                 <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-1" />
               </Link>
               <div className="flex flex-col">
                 <span className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
-                  المدة المقدَّرة
+                  ترشيح بالدعوة · مقاعد محدودة
                 </span>
-                <span className="text-sm font-semibold text-ink">٤٥–٦٠ دقيقة</span>
+                <span className="text-sm font-semibold text-ink">تُراجَع كل استمارة يدويًا</span>
               </div>
             </div>
+
           </div>
 
           {/* Left (RTL): philosophy panel */}
