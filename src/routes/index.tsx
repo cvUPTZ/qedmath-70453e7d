@@ -1,135 +1,305 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowLeft, BrainCircuit, LineChart, Users } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 
 export const Route = createFileRoute("/")({
+  head: () => ({
+    meta: [
+      { title: "QED — برنامج الخبراء التربويين للرياضيات" },
+      {
+        name: "description",
+        content:
+          "دعوة مفتوحة لأساتذة الرياضيات للمشاركة في بناء أول محرك تشخيص تربوي ذكي في الجزائر.",
+      },
+    ],
+  }),
   component: LandingPage,
 });
+
+const PILLARS = [
+  {
+    n: "I",
+    title: "التشخيص قبل التعليم",
+    body: "لا ينبغي أن يبدأ التلميذ بالدراسة قبل معرفة ما يعرفه وما لا يعرفه. الفهم يبدأ من قياس الفجوة، لا من ملء الوقت.",
+  },
+  {
+    n: "II",
+    title: "فهم الخطأ قبل تصحيحه",
+    body: "قد يصل تلميذان إلى نفس الإجابة الخاطئة، لكن لكل منهما سبب مختلف. مهمتنا اكتشاف السبب، لا تكرار الإجابة الصحيحة.",
+  },
+  {
+    n: "III",
+    title: "المهارات شبكة، لا قائمة",
+    body: "الرياضيات ليست دروسًا منفصلة، بل شبكة مترابطة. كل سؤال يقيس عقدة، وكل إجابة تُعدّل النموذج المعرفي.",
+  },
+  {
+    n: "IV",
+    title: "قرارات مبنية على البيانات",
+    body: "كل قرار تعليمي مبني على تشخيص، لا على تخمين. الحدس التربوي يُوجَّه بالأدلة، لا يُستبدَل بها.",
+  },
+];
+
+const JOURNEY = [
+  "التعريف بالمشروع",
+  "التعريف بالمترشح",
+  "الخبرة المهنية",
+  "الفلسفة التربوية",
+  "تحليل حالات واقعية",
+  "تحدٍّ عملي تشخيصي",
+  "رفع الوثائق",
+  "مراجعة الطلب",
+  "مقابلة علمية",
+  "تجربة تعاون قصيرة",
+  "اعتماد الخبير",
+];
 
 function LandingPage() {
   return (
     <div className="min-h-screen bg-parchment text-ink">
       <SiteHeader />
 
-      <main>
-        {/* Hero */}
-        <section className="container-page pt-16 pb-24 md:pt-24 md:pb-32">
-          <div className="mx-auto max-w-3xl text-center">
-            <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1 text-xs text-muted-foreground">
-              <span className="h-1.5 w-1.5 rounded-full bg-brand" />
-              مشروع QED — دعوة مفتوحة للأساتذة
-            </div>
-            <h1 className="font-display text-4xl font-extrabold leading-[1.15] tracking-tight md:text-6xl">
-              ساهم في بناء مستقبل
+      {/* HERO — Manuscript split */}
+      <section className="border-b border-ink/10 bg-parchment">
+        <div className="mx-auto grid max-w-7xl grid-cols-1 lg:grid-cols-12">
+          {/* Right (RTL): action / invitation */}
+          <div className="order-2 lg:order-1 lg:col-span-7 bg-parchment p-8 md:p-16 lg:p-20 flex flex-col justify-center min-h-[560px]">
+            <span className="font-mono text-[11px] uppercase tracking-[0.25em] text-brand-accent mb-6">
+              الإصدار الأول · ٢٠٢٦ · دعوة مفتوحة
+            </span>
+            <h1 className="font-display text-4xl leading-[1.2] text-ink md:text-5xl lg:text-6xl">
+              دعوة إلى بناء أول محرك تشخيص
               <br />
-              <span className="text-brand">تعليم الرياضيات</span> في الجزائر
+              <em className="italic text-brand-accent">تربوي ذكي</em> للرياضيات في الجزائر.
             </h1>
-            <p className="mx-auto mt-6 max-w-2xl text-base leading-relaxed text-muted-foreground md:text-lg">
-              نبحث عن أساتذة رياضيات يمتلكون خبرة ميدانية ورغبة حقيقية في تطوير
-              طرق تشخيص تعلم الرياضيات، والمساهمة في بناء منصة تعليمية تعتمد على
-              الذكاء الاصطناعي والتحليل التربوي.
+            <p className="mt-8 max-w-xl text-base leading-loose text-muted-foreground md:text-lg">
+              هذا ليس إعلان توظيف. هذه دعوة للأساتذة الذين يفكّرون تحليليًا،
+              للمشاركة في تصميم نظام يفهم <span className="text-ink font-medium">كيف</span> يتعلّم التلميذ،
+              و<span className="text-ink font-medium">لماذا</span> يخطئ، وما الذي يحتاجه فعلًا.
             </p>
-            <div className="mt-10 flex flex-wrap justify-center gap-3">
+            <div className="mt-10 flex flex-wrap items-center gap-6">
               <Link
                 to="/apply"
-                className="group inline-flex items-center gap-2 rounded-xl bg-ink px-6 py-3.5 text-sm font-semibold text-parchment shadow-soft transition-all hover:shadow-elevated"
+                className="group inline-flex items-center gap-4 bg-ink px-8 py-4 text-sm font-medium tracking-wide text-parchment transition-colors hover:bg-brand-accent"
               >
-                ابدأ التقديم
+                ابدأ الرحلة العلمية
                 <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-1" />
               </Link>
-              <a
-                href="#about"
-                className="inline-flex items-center rounded-xl border border-border bg-card px-6 py-3.5 text-sm font-semibold hover:bg-secondary"
-              >
-                تعرّف على المشروع
-              </a>
+              <div className="flex flex-col">
+                <span className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+                  المدة المقدَّرة
+                </span>
+                <span className="text-sm font-semibold text-ink">٤٥–٦٠ دقيقة</span>
+              </div>
             </div>
           </div>
-        </section>
 
-        {/* Manifesto */}
-        <section id="about" className="border-y border-border bg-card">
-          <div className="container-page py-20 md:py-28">
-            <div className="mx-auto max-w-3xl">
-              <p className="text-sm font-medium tracking-wide text-brand">
-                فلسفتنا
-              </p>
-              <h2 className="mt-3 font-display text-3xl font-bold leading-tight md:text-4xl">
-                لسنا نبحث عن أكثر الأساتذة شهرة
-              </h2>
-              <p className="mt-6 text-lg leading-relaxed text-muted-foreground">
-                بل عن الأساتذة الذين يستطيعون تفسير أخطاء التلاميذ، وفهم طريقة
-                تفكيرهم، والمساهمة في بناء نموذج تربوي علمي يعتمد على التشخيص
-                الدقيق قبل أي تدخل تعليمي.
-              </p>
-            </div>
-          </div>
-        </section>
+          {/* Left (RTL): philosophy panel */}
+          <aside className="order-1 lg:order-2 lg:col-span-5 relative overflow-hidden bg-ink p-10 md:p-14 text-parchment flex flex-col justify-between min-h-[560px]">
+            <svg
+              className="pointer-events-none absolute -left-10 -top-10 opacity-[0.08]"
+              width="320"
+              height="320"
+              viewBox="0 0 100 100"
+              fill="none"
+              aria-hidden
+            >
+              <circle cx="50" cy="50" r="48" stroke="currentColor" strokeWidth="0.4" />
+              <circle cx="50" cy="50" r="34" stroke="currentColor" strokeWidth="0.4" />
+              <circle cx="50" cy="50" r="20" stroke="currentColor" strokeWidth="0.4" />
+              <path d="M50 2L50 98M2 50L98 50" stroke="currentColor" strokeWidth="0.4" />
+            </svg>
 
-        {/* What we build */}
-        <section className="container-page py-20 md:py-28">
-          <div className="mx-auto max-w-2xl text-center">
-            <h2 className="font-display text-3xl font-bold md:text-4xl">
-              ما الذي نبنيه معًا
-            </h2>
-            <p className="mt-4 text-muted-foreground">
-              QED منصة لتشخيص تعلم الرياضيات، تجمع بين خبرة الميدان وقوة التحليل.
-            </p>
-          </div>
-
-          <div className="mt-14 grid gap-6 md:grid-cols-3">
-            {[
-              {
-                icon: BrainCircuit,
-                title: "شجرة المهارات",
-                text: "بناء خريطة معرفية دقيقة لمهارات الرياضيات، من الأساسيات إلى المفاهيم المعقدة.",
-              },
-              {
-                icon: LineChart,
-                title: "اختبارات تشخيصية",
-                text: "تصميم اختبارات قصيرة قادرة على كشف السبب الحقيقي وراء أخطاء التلاميذ.",
-              },
-              {
-                icon: Users,
-                title: "شبكة أساتذة",
-                text: "نخبة من الأساتذة يشاركون في بناء المحتوى وتحليل الأخطاء وتدريب النموذج.",
-              },
-            ].map((f) => (
-              <div
-                key={f.title}
-                className="rounded-2xl border border-border bg-card p-6 shadow-soft transition-shadow hover:shadow-elevated"
-              >
-                <div className="grid h-11 w-11 place-items-center rounded-xl bg-accent text-brand">
-                  <f.icon className="h-5 w-5" />
-                </div>
-                <h3 className="mt-5 font-display text-lg font-bold">{f.title}</h3>
-                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                  {f.text}
+            <div className="relative">
+              <div className="mb-10">
+                <div className="font-display text-4xl font-bold tracking-tight">QED</div>
+                <div className="mt-3 h-px w-12 bg-brand-accent" />
+                <p className="mt-4 font-mono text-[10px] uppercase tracking-[0.28em] text-parchment/60">
+                  Quod Erat Demonstrandum
                 </p>
               </div>
+
+              <blockquote className="border-r-2 border-brand-accent pr-6">
+                <p className="font-display text-xl italic leading-relaxed text-parchment/95 md:text-2xl">
+                  «الخطأ ليس المشكلة، بل عدم معرفة السبب الحقيقي وراء الخطأ.»
+                </p>
+                <cite className="mt-4 block font-mono text-[10px] uppercase tracking-widest not-italic text-brand-accent">
+                  — فلسفة QED
+                </cite>
+              </blockquote>
+            </div>
+
+            <dl className="relative mt-10 space-y-3 font-mono text-[11px] uppercase tracking-widest text-parchment/60">
+              <div className="flex justify-between border-t border-parchment/10 pt-3">
+                <dt>مرجع الوثيقة</dt>
+                <dd>QED/EXP-01</dd>
+              </div>
+              <div className="flex justify-between">
+                <dt>الحقل</dt>
+                <dd>الرياضيات · التشخيص التربوي</dd>
+              </div>
+            </dl>
+          </aside>
+        </div>
+      </section>
+
+      {/* MANIFESTO */}
+      <section className="border-b border-ink/10 bg-card">
+        <div className="mx-auto max-w-5xl px-6 py-24 md:py-32">
+          <span className="font-mono text-[11px] uppercase tracking-[0.25em] text-brand-accent">
+            § ١ · الرؤية
+          </span>
+          <h2 className="mt-6 font-display text-3xl leading-tight text-ink md:text-5xl">
+            نبني نظامًا يفهم التلميذ،
+            <br />
+            <em className="italic text-brand-accent">لا نظامًا يُغرقه بالتمارين.</em>
+          </h2>
+          <div className="mt-10 grid gap-10 border-t border-ink/10 pt-10 md:grid-cols-2 md:gap-16">
+            <p className="text-base leading-loose text-muted-foreground md:text-lg">
+              QED مشروع جزائري يعيد تصميم طريقة تعلّم الرياضيات باستخدام الذكاء
+              الاصطناعي وعلوم التربية. لا نسعى إلى إنشاء منصة تحتوي على آلاف
+              التمارين، بل إلى بناء نظام يُشخّص المهارات، ويكشف الثغرات
+              المفاهيمية، ويحلّل أسباب الأخطاء.
+            </p>
+            <p className="text-base leading-loose text-muted-foreground md:text-lg">
+              الهدف ليس أن يحلّ جميع التلاميذ نفس التمارين، بل أن يتعلّم كل تلميذ
+              ما يحتاج إليه بالضبط. ولهذا يبدأ QED دائمًا بالتشخيص قبل التعليم،
+              وبفهم الخطأ قبل تصحيحه.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* PILLARS */}
+      <section className="border-b border-ink/10 bg-parchment">
+        <div className="mx-auto max-w-6xl px-6 py-24 md:py-32">
+          <span className="font-mono text-[11px] uppercase tracking-[0.25em] text-brand-accent">
+            § ٢ · المبادئ
+          </span>
+          <h2 className="mt-6 font-display text-3xl leading-tight text-ink md:text-5xl">
+            أربعة مبادئ تحكم كل قرار.
+          </h2>
+
+          <div className="mt-14 grid gap-px border border-ink/10 bg-ink/10 md:grid-cols-2">
+            {PILLARS.map((p) => (
+              <article key={p.n} className="bg-parchment p-8 md:p-10">
+                <div className="flex items-baseline gap-4">
+                  <span className="font-display text-3xl italic text-brand-accent">
+                    {p.n}
+                  </span>
+                  <h3 className="font-display text-xl text-ink md:text-2xl">
+                    {p.title}
+                  </h3>
+                </div>
+                <p className="mt-4 text-sm leading-loose text-muted-foreground md:text-base">
+                  {p.body}
+                </p>
+              </article>
             ))}
           </div>
-        </section>
+        </div>
+      </section>
 
-        {/* CTA */}
-        <section className="container-page pb-24">
-          <div className="mx-auto max-w-4xl rounded-3xl bg-ink px-8 py-14 text-center text-parchment md:px-16">
-            <h2 className="font-display text-3xl font-bold md:text-4xl">
-              هل أنت جاهز للمساهمة؟
+      {/* WHO WE SEEK */}
+      <section className="bg-ink text-parchment">
+        <div className="mx-auto grid max-w-6xl gap-16 px-6 py-24 md:grid-cols-12 md:py-32">
+          <div className="md:col-span-5">
+            <span className="font-mono text-[11px] uppercase tracking-[0.25em] text-brand-accent">
+              § ٣ · من نبحث عنه
+            </span>
+            <h2 className="mt-6 font-display text-3xl leading-tight md:text-4xl">
+              ليس <em className="italic text-parchment/60">أشهر</em> الأساتذة.
+              <br />
+              بل <em className="italic text-brand-accent">أعمقهم</em> تفكيرًا.
             </h2>
-            <p className="mx-auto mt-4 max-w-2xl text-parchment/70">
-              رحلة التقديم مصممة لتعكس فلسفة المشروع: أسئلة عميقة، دراسة حالة،
-              واختبار تشخيصي عملي. تستغرق حوالي ٤٥ دقيقة.
-            </p>
-            <Link
-              to="/apply"
-              className="mt-8 inline-flex items-center gap-2 rounded-xl bg-brand px-6 py-3.5 text-sm font-semibold text-brand-foreground transition-transform hover:scale-[1.02]"
-            >
-              ابدأ التقديم الآن
-              <ArrowLeft className="h-4 w-4" />
-            </Link>
           </div>
-        </section>
-      </main>
+          <div className="md:col-span-7 space-y-6 text-base leading-loose text-parchment/80 md:text-lg">
+            <p>
+              لا نبحث عن صاحب أكبر عدد من المتابعين، ولا عن من يكتب أكبر عدد من
+              التمارين. نبحث عن الأستاذ الذي يسأل دائمًا:
+            </p>
+            <ul className="space-y-4 border-r-2 border-brand-accent pr-6 font-display text-lg italic text-parchment md:text-xl">
+              <li>«لماذا أخطأ التلميذ؟»</li>
+              <li>«هل يوجد أكثر من سبب لهذا الخطأ؟»</li>
+              <li>«كيف أبني سؤالًا يكشف هذا الضعف بالضبط؟»</li>
+              <li>«ما المهارة التي سبّبت هذا الخطأ؟ وكيف أعالجها؟»</li>
+            </ul>
+            <p className="text-parchment/70">
+              لأن الاختيار لن يعتمد على السيرة الذاتية وحدها، بل على
+              <span className="text-parchment"> جودة التفكير</span>.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* JOURNEY */}
+      <section className="border-b border-ink/10 bg-card">
+        <div className="mx-auto max-w-6xl px-6 py-24 md:py-32">
+          <span className="font-mono text-[11px] uppercase tracking-[0.25em] text-brand-accent">
+            § ٤ · الرحلة
+          </span>
+          <h2 className="mt-6 font-display text-3xl leading-tight text-ink md:text-5xl">
+            رحلة علمية من إحدى عشرة مرحلة.
+          </h2>
+          <p className="mt-6 max-w-2xl text-muted-foreground md:text-lg">
+            يجب أن يشعر الأستاذ بأنه يمرّ برحلة علمية، لا بعملية توظيف. كل مرحلة
+            مصمَّمة لكشف زاوية مختلفة من التفكير التربوي.
+          </p>
+
+          <ol className="mt-14 grid gap-px border border-ink/10 bg-ink/10 sm:grid-cols-2 lg:grid-cols-3">
+            {JOURNEY.map((title, i) => (
+              <li
+                key={title}
+                className="flex items-baseline gap-4 bg-card p-6 md:p-7"
+              >
+                <span className="font-mono text-xs text-brand-accent">
+                  {String(i + 1).padStart(2, "0")}
+                </span>
+                <span className="font-display text-lg text-ink">{title}</span>
+              </li>
+            ))}
+          </ol>
+        </div>
+      </section>
+
+      {/* FUTURE */}
+      <section className="bg-parchment">
+        <div className="mx-auto max-w-4xl px-6 py-24 text-center md:py-32">
+          <span className="font-mono text-[11px] uppercase tracking-[0.25em] text-brand-accent">
+            § ٥ · الرؤية المستقبلية
+          </span>
+          <h2 className="mt-6 font-display text-3xl leading-tight text-ink md:text-5xl">
+            نحو مجلس تربوي دائم داخل QED.
+          </h2>
+          <p className="mt-8 text-base leading-loose text-muted-foreground md:text-lg">
+            هذا البرنامج بداية لتأسيس مجلس يضم نخبة من أساتذة الرياضيات والمفتشين
+            والباحثين، مسؤول عن تطوير النموذج التربوي، ومراجعة نتائج التشخيص،
+            وتحسين شجرة المهارات باستمرار — بالتكامل بين الخبرة البشرية والتحليل
+            المعتمد على البيانات.
+          </p>
+        </div>
+      </section>
+
+      {/* CTA */}
+      <section className="border-t border-ink/10 bg-ink text-parchment">
+        <div className="mx-auto flex max-w-5xl flex-col items-start gap-8 px-6 py-20 md:flex-row md:items-center md:justify-between md:py-24">
+          <div>
+            <span className="font-mono text-[11px] uppercase tracking-[0.25em] text-brand-accent">
+              الانضمام
+            </span>
+            <h2 className="mt-4 font-display text-3xl leading-tight md:text-4xl">
+              إن كنت ترى نفسك في هذا،
+              <br />
+              <em className="italic text-brand-accent">ابدأ الرحلة.</em>
+            </h2>
+          </div>
+          <Link
+            to="/apply"
+            className="group inline-flex items-center gap-4 border border-parchment/30 bg-parchment px-8 py-4 text-sm font-medium tracking-wide text-ink transition-colors hover:bg-brand-accent hover:text-parchment"
+          >
+            ابدأ التقديم الآن
+            <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-1" />
+          </Link>
+        </div>
+      </section>
 
       <SiteFooter />
     </div>
@@ -138,17 +308,19 @@ function LandingPage() {
 
 function SiteHeader() {
   return (
-    <header className="border-b border-border">
-      <div className="container-page flex h-16 items-center justify-between">
-        <Link to="/" className="flex items-center gap-2">
-          <div className="grid h-8 w-8 place-items-center rounded-lg bg-ink text-parchment font-display font-black">
-            Q
-          </div>
-          <span className="font-display text-lg font-bold tracking-tight">QED</span>
+    <header className="border-b border-ink/10 bg-parchment">
+      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
+        <Link to="/" className="flex items-baseline gap-3">
+          <span className="font-display text-2xl font-bold tracking-tight text-ink">
+            QED
+          </span>
+          <span className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground hidden sm:inline">
+            برنامج الخبراء التربويين
+          </span>
         </Link>
         <Link
           to="/apply"
-          className="rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-brand-foreground hover:opacity-90"
+          className="border border-ink/20 px-4 py-2 text-xs font-medium tracking-wide text-ink transition-colors hover:bg-ink hover:text-parchment"
         >
           التقديم
         </Link>
@@ -159,10 +331,10 @@ function SiteHeader() {
 
 function SiteFooter() {
   return (
-    <footer className="border-t border-border bg-card">
-      <div className="container-page flex flex-col items-center justify-between gap-2 py-8 text-sm text-muted-foreground md:flex-row">
-        <p>© {new Date().getFullYear()} QED — مشروع تعليم الرياضيات في الجزائر</p>
-        <p className="font-display font-medium">اصنع فرقًا في التعليم</p>
+    <footer className="border-t border-ink/10 bg-parchment">
+      <div className="mx-auto flex max-w-7xl flex-col items-start justify-between gap-3 px-6 py-8 font-mono text-[11px] uppercase tracking-widest text-muted-foreground md:flex-row md:items-center">
+        <p>© {new Date().getFullYear()} QED · الجزائر</p>
+        <p>Pedagogical Diagnostic Engine · v1.0</p>
       </div>
     </footer>
   );
