@@ -79,14 +79,14 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "QED — نحو بناء مستقبل تعليم الرياضيات في الجزائر" },
+      { title: "QED — برنامج الخبراء التربويين للرياضيات" },
       {
         name: "description",
         content:
           "منصة QED لاستقطاب أساتذة الرياضيات للمساهمة في تصميم نظام تشخيص علمي لتعلم الرياضيات في الجزائر.",
       },
       { name: "author", content: "QED" },
-      { property: "og:title", content: "QED — بناء مستقبل تعليم الرياضيات" },
+      { property: "og:title", content: "QED — برنامج الخبراء التربويين للرياضيات" },
       {
         property: "og:description",
         content:
@@ -94,6 +94,12 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:title", content: "QED — برنامج الخبراء التربويين للرياضيات" },
+      { name: "description", content: "دعوة مفتوحة لأساتذة الرياضيات للمشاركة في بناء أول محرك تشخيص تربوي ذكي في الجزائر." },
+      { property: "og:description", content: "دعوة مفتوحة لأساتذة الرياضيات للمشاركة في بناء أول محرك تشخيص تربوي ذكي في الجزائر." },
+      { name: "twitter:description", content: "دعوة مفتوحة لأساتذة الرياضيات للمشاركة في بناء أول محرك تشخيص تربوي ذكي في الجزائر." },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/e2725b6c-03b9-4f8f-a30c-1697a1141e58/id-preview-4ca09b6b--ffd3cbdc-cb79-43c1-babe-634d0aeccb95.lovable.app-1783162410242.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/e2725b6c-03b9-4f8f-a30c-1697a1141e58/id-preview-4ca09b6b--ffd3cbdc-cb79-43c1-babe-634d0aeccb95.lovable.app-1783162410242.png" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
