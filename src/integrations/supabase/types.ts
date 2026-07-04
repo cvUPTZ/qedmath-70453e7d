@@ -14,16 +14,177 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      application_notes: {
+        Row: {
+          admin_id: string
+          application_id: string
+          created_at: string
+          id: string
+          note: string
+        }
+        Insert: {
+          admin_id: string
+          application_id: string
+          created_at?: string
+          id?: string
+          note: string
+        }
+        Update: {
+          admin_id?: string
+          application_id?: string
+          created_at?: string
+          id?: string
+          note?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "application_notes_application_id_fkey"
+            columns: ["application_id"]
+            isOneToOne: false
+            referencedRelation: "applications"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      applications: {
+        Row: {
+          ai_breakdown: Json | null
+          ai_evaluated_at: string | null
+          ai_score: number | null
+          case_study: Json
+          contributed_curricula: string | null
+          contribution_types: string[]
+          created_at: string
+          cv_path: string | null
+          designed_official_exams: string | null
+          email: string
+          extra_files: Json | null
+          full_name: string
+          id: string
+          institution_type: string
+          levels_taught: string[]
+          pedagogy_answers: Json
+          phone: string
+          practical_test: Json
+          research_work: string | null
+          status: Database["public"]["Enums"]["application_status"]
+          subjects: string
+          trained_teachers: string | null
+          updated_at: string
+          vision_answers: Json
+          weekly_hours: number
+          wilaya: string
+          work_certificate_path: string | null
+          workplace: string
+          years_experience: number
+        }
+        Insert: {
+          ai_breakdown?: Json | null
+          ai_evaluated_at?: string | null
+          ai_score?: number | null
+          case_study: Json
+          contributed_curricula?: string | null
+          contribution_types: string[]
+          created_at?: string
+          cv_path?: string | null
+          designed_official_exams?: string | null
+          email: string
+          extra_files?: Json | null
+          full_name: string
+          id?: string
+          institution_type: string
+          levels_taught: string[]
+          pedagogy_answers: Json
+          phone: string
+          practical_test: Json
+          research_work?: string | null
+          status?: Database["public"]["Enums"]["application_status"]
+          subjects: string
+          trained_teachers?: string | null
+          updated_at?: string
+          vision_answers: Json
+          weekly_hours: number
+          wilaya: string
+          work_certificate_path?: string | null
+          workplace: string
+          years_experience: number
+        }
+        Update: {
+          ai_breakdown?: Json | null
+          ai_evaluated_at?: string | null
+          ai_score?: number | null
+          case_study?: Json
+          contributed_curricula?: string | null
+          contribution_types?: string[]
+          created_at?: string
+          cv_path?: string | null
+          designed_official_exams?: string | null
+          email?: string
+          extra_files?: Json | null
+          full_name?: string
+          id?: string
+          institution_type?: string
+          levels_taught?: string[]
+          pedagogy_answers?: Json
+          phone?: string
+          practical_test?: Json
+          research_work?: string | null
+          status?: Database["public"]["Enums"]["application_status"]
+          subjects?: string
+          trained_teachers?: string | null
+          updated_at?: string
+          vision_answers?: Json
+          weekly_hours?: number
+          wilaya?: string
+          work_certificate_path?: string | null
+          workplace?: string
+          years_experience?: number
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "user"
+      application_status:
+        | "new"
+        | "reviewing"
+        | "interview"
+        | "trial"
+        | "accepted"
+        | "rejected"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +311,16 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "user"],
+      application_status: [
+        "new",
+        "reviewing",
+        "interview",
+        "trial",
+        "accepted",
+        "rejected",
+      ],
+    },
   },
 } as const
