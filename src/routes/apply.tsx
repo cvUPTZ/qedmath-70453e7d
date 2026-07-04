@@ -18,15 +18,7 @@ const labelCls = "text-sm font-medium text-ink";
 const textareaCls = inputCls + " min-h-32 resize-y leading-relaxed";
 const hintCls = "mt-1 text-xs text-muted-foreground";
 
-function Field({
-  label,
-  hint,
-  children,
-}: {
-  label: string;
-  hint?: string;
-  children: React.ReactNode;
-}) {
+function Field({ label, hint, children }: { label: string; hint?: string; children: React.ReactNode }) {
   return (
     <div>
       <label className={labelCls}>{label}</label>
@@ -57,9 +49,12 @@ type FormState = {
   weekly_hours: string;
   contribution_types: string[];
   practical: {
-    q1_analysis: string; q1_improvement: string;
-    q2_analysis: string; q2_improvement: string;
-    q3_analysis: string; q3_improvement: string;
+    q1_analysis: string;
+    q1_improvement: string;
+    q2_analysis: string;
+    q2_improvement: string;
+    q3_analysis: string;
+    q3_improvement: string;
   };
   cv_path: string | null;
   work_certificate_path: string | null;
@@ -67,23 +62,68 @@ type FormState = {
 };
 
 const EMPTY: FormState = {
-  full_name: "", email: "", phone: "", wilaya: "", workplace: "",
-  institution_type: "", years_experience: "", levels_taught: [],
-  subjects: "", designed_official_exams: "", contributed_curricula: "",
-  trained_teachers: "", research_work: "",
+  full_name: "",
+  email: "",
+  phone: "",
+  wilaya: "",
+  workplace: "",
+  institution_type: "",
+  years_experience: "",
+  levels_taught: [],
+  subjects: "",
+  designed_official_exams: "",
+  contributed_curricula: "",
+  trained_teachers: "",
+  research_work: "",
   pedagogy: { q1: "", q2: "", q3: "", q4: "", q5: "" },
   case_study: { reasons: ["", "", ""], diagnostic_questions: ["", "", ""] },
   vision: { why_join: "", future_view: "", one_change: "", contribution: "" },
-  weekly_hours: "", contribution_types: [],
+  weekly_hours: "",
+  contribution_types: [],
   practical: {
-    q1_analysis: "", q1_improvement: "",
-    q2_analysis: "", q2_improvement: "",
-    q3_analysis: "", q3_improvement: "",
+    q1_analysis: "",
+    q1_improvement: "",
+    q2_analysis: "",
+    q2_improvement: "",
+    q3_analysis: "",
+    q3_improvement: "",
   },
-  cv_path: null, work_certificate_path: null, extra_files: [],
+  cv_path: null,
+  work_certificate_path: null,
+  extra_files: [],
 };
 
 const STORAGE_KEY = "qed_application_draft_v1";
+
+// Guards against a corrupted draft: if a previous submission attempt failed,
+// some code path may have written the raw error message into a form field
+// instead of showing it as a toast. If that ever happens again, this keeps
+// the poisoned text out of the form instead of silently resubmitting it.
+function looksLikeErrorString(v: unknown): v is string {
+  return (
+    typeof v === "string" &&
+    /row-level security|violates|RLS|Failed to fetch|TypeError|is not a function|undefined is not/i.test(v)
+  );
+}
+
+function sanitizeDraft(raw: unknown): { data: Partial<FormState>; hadCorruption: boolean } {
+  let hadCorruption = false;
+  const clean = (val: unknown): unknown => {
+    if (looksLikeErrorString(val)) {
+      hadCorruption = true;
+      return "";
+    }
+    if (Array.isArray(val)) return val.map(clean);
+    if (val && typeof val === "object") {
+      const out: Record<string, unknown> = {};
+      for (const [k, v] of Object.entries(val)) out[k] = clean(v);
+      return out;
+    }
+    return val;
+  };
+  const data = (raw && typeof raw === "object" ? clean(raw) : {}) as Partial<FormState>;
+  return { data, hadCorruption };
+}
 
 const LEVELS = ["متوسط", "ثانوي", "جامعي", "تعليم خاص"];
 const CONTRIB_TYPES = [
@@ -96,15 +136,7 @@ const CONTRIB_TYPES = [
   "تدريب الأساتذة",
 ];
 
-const STEPS = [
-  "التعريف",
-  "الخبرة",
-  "التفكير التربوي",
-  "دراسة حالة",
-  "الرؤية",
-  "التعاون",
-  "الاختبار العملي",
-];
+const STEPS = ["التعريف", "الخبرة", "التفكير التربوي", "دراسة حالة", "الرؤية", "التعاون", "الاختبار العملي"];
 
 // Practical test questions (QED-style)
 const PRACTICAL_QUESTIONS = [
@@ -142,11 +174,12 @@ function ApplyPage() {
   }, []);
   useEffect(() => {
     if (!hydrated) return;
-    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(form)); } catch {}
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(form));
+    } catch {}
   }, [form, hydrated]);
 
-  const update = <K extends keyof FormState>(k: K, v: FormState[K]) =>
-    setForm((f) => ({ ...f, [k]: v }));
+  const update = <K extends keyof FormState>(k: K, v: FormState[K]) => setForm((f) => ({ ...f, [k]: v }));
 
   const validateStep = (): string | null => {
     switch (step) {
@@ -202,12 +235,18 @@ function ApplyPage() {
 
   const next = () => {
     const err = validateStep();
-    if (err) { toast.error(err); return; }
+    if (err) {
+      toast.error(err);
+      return;
+    }
     if (step < STEPS.length - 1) setStep(step + 1);
     else void handleSubmit();
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
-  const prev = () => { setStep(Math.max(0, step - 1)); window.scrollTo({ top: 0, behavior: "smooth" }); };
+  const prev = () => {
+    setStep(Math.max(0, step - 1));
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
 
   const handleSubmit = async () => {
     setSubmitting(true);
@@ -260,15 +299,10 @@ function ApplyPage() {
               </p>
               <h2 className="truncate font-display text-lg font-bold">{STEPS[step]}</h2>
             </div>
-            <div className="shrink-0 text-xs text-muted-foreground">
-              يتم الحفظ التلقائي
-            </div>
+            <div className="shrink-0 text-xs text-muted-foreground">يتم الحفظ التلقائي</div>
           </div>
           <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-secondary">
-            <div
-              className="h-full bg-brand transition-all duration-500"
-              style={{ width: `${progress}%` }}
-            />
+            <div className="h-full bg-brand transition-all duration-500" style={{ width: `${progress}%` }} />
           </div>
         </div>
       </header>
@@ -339,9 +373,7 @@ function Stage1({ form, update }: StageProps) {
   const toggleLevel = (l: string) => {
     update(
       "levels_taught",
-      form.levels_taught.includes(l)
-        ? form.levels_taught.filter((x) => x !== l)
-        : [...form.levels_taught, l],
+      form.levels_taught.includes(l) ? form.levels_taught.filter((x) => x !== l) : [...form.levels_taught, l],
     );
   };
   return (
@@ -355,7 +387,12 @@ function Stage1({ form, update }: StageProps) {
           <input className={inputCls} value={form.full_name} onChange={(e) => update("full_name", e.target.value)} />
         </Field>
         <Field label="البريد الإلكتروني">
-          <input type="email" className={inputCls} value={form.email} onChange={(e) => update("email", e.target.value)} />
+          <input
+            type="email"
+            className={inputCls}
+            value={form.email}
+            onChange={(e) => update("email", e.target.value)}
+          />
         </Field>
         <Field label="رقم الهاتف">
           <input className={inputCls} value={form.phone} onChange={(e) => update("phone", e.target.value)} />
@@ -363,15 +400,22 @@ function Stage1({ form, update }: StageProps) {
         <Field label="الولاية">
           <select className={inputCls} value={form.wilaya} onChange={(e) => update("wilaya", e.target.value)}>
             <option value="">اختر الولاية</option>
-            {WILAYAS.map((w) => <option key={w} value={w}>{w}</option>)}
+            {WILAYAS.map((w) => (
+              <option key={w} value={w}>
+                {w}
+              </option>
+            ))}
           </select>
         </Field>
         <Field label="مكان العمل الحالي">
           <input className={inputCls} value={form.workplace} onChange={(e) => update("workplace", e.target.value)} />
         </Field>
         <Field label="نوع المؤسسة">
-          <select className={inputCls} value={form.institution_type}
-            onChange={(e) => update("institution_type", e.target.value as FormState["institution_type"])}>
+          <select
+            className={inputCls}
+            value={form.institution_type}
+            onChange={(e) => update("institution_type", e.target.value as FormState["institution_type"])}
+          >
             <option value="">اختر</option>
             <option value="public">عمومية</option>
             <option value="private">خاصة</option>
@@ -379,8 +423,14 @@ function Stage1({ form, update }: StageProps) {
           </select>
         </Field>
         <Field label="سنوات الخبرة">
-          <input type="number" min={0} max={80} className={inputCls} value={form.years_experience}
-            onChange={(e) => update("years_experience", e.target.value)} />
+          <input
+            type="number"
+            min={0}
+            max={80}
+            className={inputCls}
+            value={form.years_experience}
+            onChange={(e) => update("years_experience", e.target.value)}
+          />
         </Field>
       </div>
 
@@ -396,9 +446,7 @@ function Stage1({ form, update }: StageProps) {
                 onClick={() => toggleLevel(l)}
                 className={
                   "rounded-full border px-4 py-2 text-sm transition " +
-                  (active
-                    ? "border-brand bg-brand text-brand-foreground"
-                    : "border-border bg-card hover:bg-secondary")
+                  (active ? "border-brand bg-brand text-brand-foreground" : "border-border bg-card hover:bg-secondary")
                 }
               >
                 {l}
@@ -420,20 +468,32 @@ function Stage2({ form, update }: StageProps) {
           <input className={inputCls} value={form.subjects} onChange={(e) => update("subjects", e.target.value)} />
         </Field>
         <Field label="هل سبق أن شاركت في إعداد اختبارات رسمية؟" hint="اترك الحقل فارغًا إن لم يكن ذلك ينطبق عليك.">
-          <textarea className={textareaCls} value={form.designed_official_exams}
-            onChange={(e) => update("designed_official_exams", e.target.value)} />
+          <textarea
+            className={textareaCls}
+            value={form.designed_official_exams}
+            onChange={(e) => update("designed_official_exams", e.target.value)}
+          />
         </Field>
         <Field label="هل سبق أن ساهمت في إعداد مناهج أو مراجع؟">
-          <textarea className={textareaCls} value={form.contributed_curricula}
-            onChange={(e) => update("contributed_curricula", e.target.value)} />
+          <textarea
+            className={textareaCls}
+            value={form.contributed_curricula}
+            onChange={(e) => update("contributed_curricula", e.target.value)}
+          />
         </Field>
         <Field label="هل سبق أن دربت أساتذة آخرين؟">
-          <textarea className={textareaCls} value={form.trained_teachers}
-            onChange={(e) => update("trained_teachers", e.target.value)} />
+          <textarea
+            className={textareaCls}
+            value={form.trained_teachers}
+            onChange={(e) => update("trained_teachers", e.target.value)}
+          />
         </Field>
         <Field label="هل لديك أعمال أو أبحاث تربوية؟">
-          <textarea className={textareaCls} value={form.research_work}
-            onChange={(e) => update("research_work", e.target.value)} />
+          <textarea
+            className={textareaCls}
+            value={form.research_work}
+            onChange={(e) => update("research_work", e.target.value)}
+          />
         </Field>
       </div>
     </>
@@ -441,8 +501,16 @@ function Stage2({ form, update }: StageProps) {
 }
 
 function LongQuestion({
-  n, question, value, onChange,
-}: { n: number; question: string; value: string; onChange: (v: string) => void }) {
+  n,
+  question,
+  value,
+  onChange,
+}: {
+  n: number;
+  question: string;
+  value: string;
+  onChange: (v: string) => void;
+}) {
   return (
     <div className="rounded-2xl border border-border bg-card p-6">
       <div className="flex items-baseline gap-3">
@@ -469,11 +537,36 @@ function Stage3({ form, update }: StageProps) {
         desc="خمسة أسئلة مفتوحة تعكس طريقتك في فهم الأخطاء وبناء الاختبارات. أجب بعمق."
       />
       <div className="space-y-4">
-        <LongQuestion n={1} question="برأيك، لماذا يواجه كثير من التلاميذ صعوبة في تعلم الرياضيات؟" value={p.q1} onChange={(v) => set("q1", v)} />
-        <LongQuestion n={2} question="عندما يجيب تلميذ بإجابة خاطئة، كيف تحدد السبب الحقيقي للخطأ قبل تصحيحه؟" value={p.q2} onChange={(v) => set("q2", v)} />
-        <LongQuestion n={3} question="هل يمكن أن يصل تلميذان إلى نفس الإجابة الخاطئة لكن لأسباب مختلفة؟ اشرح مع أمثلة." value={p.q3} onChange={(v) => set("q3", v)} />
-        <LongQuestion n={4} question="لو طلب منك تصميم اختبار تشخيصي لا يتجاوز عشرين دقيقة، كيف ستبنيه؟" value={p.q4} onChange={(v) => set("q4", v)} />
-        <LongQuestion n={5} question="اذكر أكثر ثلاثة أخطاء تراها تتكرر عند التلاميذ، ولماذا تحدث؟" value={p.q5} onChange={(v) => set("q5", v)} />
+        <LongQuestion
+          n={1}
+          question="برأيك، لماذا يواجه كثير من التلاميذ صعوبة في تعلم الرياضيات؟"
+          value={p.q1}
+          onChange={(v) => set("q1", v)}
+        />
+        <LongQuestion
+          n={2}
+          question="عندما يجيب تلميذ بإجابة خاطئة، كيف تحدد السبب الحقيقي للخطأ قبل تصحيحه؟"
+          value={p.q2}
+          onChange={(v) => set("q2", v)}
+        />
+        <LongQuestion
+          n={3}
+          question="هل يمكن أن يصل تلميذان إلى نفس الإجابة الخاطئة لكن لأسباب مختلفة؟ اشرح مع أمثلة."
+          value={p.q3}
+          onChange={(v) => set("q3", v)}
+        />
+        <LongQuestion
+          n={4}
+          question="لو طلب منك تصميم اختبار تشخيصي لا يتجاوز عشرين دقيقة، كيف ستبنيه؟"
+          value={p.q4}
+          onChange={(v) => set("q4", v)}
+        />
+        <LongQuestion
+          n={5}
+          question="اذكر أكثر ثلاثة أخطاء تراها تتكرر عند التلاميذ، ولماذا تحدث؟"
+          value={p.q5}
+          onChange={(v) => set("q5", v)}
+        />
       </div>
     </>
   );
@@ -505,9 +598,7 @@ function Stage4({ form, update }: StageProps) {
       </div>
 
       <div className="mt-8">
-        <h3 className="font-display text-lg font-bold">
-          اذكر ثلاثة أسباب مختلفة قد تجعل التلميذ يجيب إجابة خاطئة:
-        </h3>
+        <h3 className="font-display text-lg font-bold">اذكر ثلاثة أسباب مختلفة قد تجعل التلميذ يجيب إجابة خاطئة:</h3>
         <div className="mt-3 space-y-3">
           {[0, 1, 2].map((i) => (
             <div key={i} className="flex gap-3">
@@ -552,10 +643,30 @@ function Stage5({ form, update }: StageProps) {
     <>
       <StageIntro title="الرؤية" />
       <div className="space-y-4">
-        <LongQuestion n={1} question="لماذا ترغب في الانضمام إلى مشروع QED؟" value={v.why_join} onChange={(x) => set("why_join", x)} />
-        <LongQuestion n={2} question="كيف ترى مستقبل تعليم الرياضيات في الجزائر؟" value={v.future_view} onChange={(x) => set("future_view", x)} />
-        <LongQuestion n={3} question="إذا أتيحت لك فرصة تغيير شيء واحد فقط في طريقة تدريس الرياضيات، فما هو؟" value={v.one_change} onChange={(x) => set("one_change", x)} />
-        <LongQuestion n={4} question="ما الذي تتوقع أن تضيفه للمشروع؟" value={v.contribution} onChange={(x) => set("contribution", x)} />
+        <LongQuestion
+          n={1}
+          question="لماذا ترغب في الانضمام إلى مشروع QED؟"
+          value={v.why_join}
+          onChange={(x) => set("why_join", x)}
+        />
+        <LongQuestion
+          n={2}
+          question="كيف ترى مستقبل تعليم الرياضيات في الجزائر؟"
+          value={v.future_view}
+          onChange={(x) => set("future_view", x)}
+        />
+        <LongQuestion
+          n={3}
+          question="إذا أتيحت لك فرصة تغيير شيء واحد فقط في طريقة تدريس الرياضيات، فما هو؟"
+          value={v.one_change}
+          onChange={(x) => set("one_change", x)}
+        />
+        <LongQuestion
+          n={4}
+          question="ما الذي تتوقع أن تضيفه للمشروع؟"
+          value={v.contribution}
+          onChange={(x) => set("contribution", x)}
+        />
       </div>
     </>
   );
@@ -575,12 +686,20 @@ function Stage6({ form, update }: StageProps) {
       <StageIntro title="التعاون" desc="حدد نمط ومساحة مشاركتك الممكنة." />
       <div className="max-w-sm">
         <Field label="كم ساعة تستطيع تخصيصها أسبوعيًا؟">
-          <input type="number" min={1} max={80} className={inputCls}
-            value={form.weekly_hours} onChange={(e) => update("weekly_hours", e.target.value)} />
+          <input
+            type="number"
+            min={1}
+            max={80}
+            className={inputCls}
+            value={form.weekly_hours}
+            onChange={(e) => update("weekly_hours", e.target.value)}
+          />
         </Field>
       </div>
       <div className="mt-8">
-        <label className={labelCls}>ما نوع المساهمة التي تفضلها؟ <span className="text-muted-foreground">(اختر واحدة أو أكثر)</span></label>
+        <label className={labelCls}>
+          ما نوع المساهمة التي تفضلها؟ <span className="text-muted-foreground">(اختر واحدة أو أكثر)</span>
+        </label>
         <div className="mt-3 grid gap-2 md:grid-cols-2">
           {CONTRIB_TYPES.map((c) => {
             const active = form.contribution_types.includes(c);
@@ -591,13 +710,16 @@ function Stage6({ form, update }: StageProps) {
                 onClick={() => toggle(c)}
                 className={
                   "flex items-center justify-between rounded-xl border p-4 text-right text-sm transition " +
-                  (active
-                    ? "border-brand bg-accent"
-                    : "border-border bg-card hover:bg-secondary")
+                  (active ? "border-brand bg-accent" : "border-border bg-card hover:bg-secondary")
                 }
               >
                 <span className="font-medium">{c}</span>
-                <span className={"grid h-5 w-5 place-items-center rounded border " + (active ? "border-brand bg-brand text-brand-foreground" : "border-border")}>
+                <span
+                  className={
+                    "grid h-5 w-5 place-items-center rounded border " +
+                    (active ? "border-brand bg-brand text-brand-foreground" : "border-border")
+                  }
+                >
                   {active && <Check className="h-3.5 w-3.5" />}
                 </span>
               </button>
@@ -635,7 +757,11 @@ function Stage7({ form, update }: StageProps) {
                   <textarea className={textareaCls} value={p[ak]} onChange={(e) => set(ak, e.target.value)} />
                 </Field>
                 <Field label="اقتراح تحسين لهذا السؤال">
-                  <textarea className={textareaCls + " min-h-20"} value={p[ik]} onChange={(e) => set(ik, e.target.value)} />
+                  <textarea
+                    className={textareaCls + " min-h-20"}
+                    value={p[ik]}
+                    onChange={(e) => set(ik, e.target.value)}
+                  />
                 </Field>
               </div>
             </div>
@@ -689,8 +815,16 @@ function useUpload() {
 }
 
 function FileUploader({
-  label, value, onChange, required,
-}: { label: string; value: string | null; onChange: (v: string | null) => void; required?: boolean }) {
+  label,
+  value,
+  onChange,
+  required,
+}: {
+  label: string;
+  value: string | null;
+  onChange: (v: string | null) => void;
+  required?: boolean;
+}) {
   const upload = useUpload();
   const [busy, setBusy] = useState(false);
   const onFile = async (f: File | undefined) => {
@@ -700,15 +834,24 @@ function FileUploader({
       const p = await upload(f);
       onChange(p);
       toast.success("تم رفع الملف");
-    } catch (e) { toast.error((e as Error).message); }
-    finally { setBusy(false); }
+    } catch (e) {
+      toast.error((e as Error).message);
+    } finally {
+      setBusy(false);
+    }
   };
   return (
     <div className="rounded-xl border border-border bg-card p-5">
       <div className="flex items-center justify-between gap-4">
         <div className="min-w-0">
-          <p className="font-medium">{label} {required && <span className="text-destructive">*</span>}</p>
-          {value && <p className="mt-1 truncate text-xs text-muted-foreground" dir="ltr">{value}</p>}
+          <p className="font-medium">
+            {label} {required && <span className="text-destructive">*</span>}
+          </p>
+          {value && (
+            <p className="mt-1 truncate text-xs text-muted-foreground" dir="ltr">
+              {value}
+            </p>
+          )}
         </div>
         <label className="shrink-0 cursor-pointer">
           <input
@@ -728,8 +871,14 @@ function FileUploader({
 }
 
 function MultiFileUploader({
-  label, value, onChange,
-}: { label: string; value: string[]; onChange: (v: string[]) => void }) {
+  label,
+  value,
+  onChange,
+}: {
+  label: string;
+  value: string[];
+  onChange: (v: string[]) => void;
+}) {
   const upload = useUpload();
   const [busy, setBusy] = useState(false);
   const onFiles = async (files: FileList | null) => {
@@ -740,17 +889,18 @@ function MultiFileUploader({
       for (const f of Array.from(files)) paths.push(await upload(f));
       onChange([...value, ...paths]);
       toast.success("تم رفع الملفات");
-    } catch (e) { toast.error((e as Error).message); }
-    finally { setBusy(false); }
+    } catch (e) {
+      toast.error((e as Error).message);
+    } finally {
+      setBusy(false);
+    }
   };
   return (
     <div className="rounded-xl border border-border bg-card p-5">
       <div className="flex items-center justify-between gap-4">
         <div className="min-w-0">
           <p className="font-medium">{label}</p>
-          {value.length > 0 && (
-            <p className="mt-1 text-xs text-muted-foreground">{value.length} ملف مرفوع</p>
-          )}
+          {value.length > 0 && <p className="mt-1 text-xs text-muted-foreground">{value.length} ملف مرفوع</p>}
         </div>
         <label className="shrink-0 cursor-pointer">
           <input
