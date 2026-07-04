@@ -57,23 +57,23 @@ export const submitApplication = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
-    const { data: row, error } = await supabaseAdmin
+    const id = crypto.randomUUID();
+    const { error } = await supabaseAdmin
       .from("applications")
       .insert({
+        id,
         ...data,
         extra_files: data.extra_files ?? [],
-      })
-      .select("id")
-      .single();
+      });
 
     if (error) throw new Error(error.message);
 
     // Fire and forget AI scoring
-    scoreApplicationAsync(row.id, data).catch((e) =>
+    scoreApplicationAsync(id, data).catch((e) =>
       console.error("AI scoring failed:", e),
     );
 
-    return { id: row.id };
+    return { id };
   });
 
 async function scoreApplicationAsync(applicationId: string, data: ApplicationInput) {
