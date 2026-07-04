@@ -13,7 +13,8 @@
   --radius-3xl: calc(var(--radius) + 12px);
 
   --font-sans: "IBM Plex Sans Arabic", ui-sans-serif, system-ui, sans-serif;
-  --font-display: "Tajawal", "IBM Plex Sans Arabic", sans-serif;
+  --font-display: "Libre Baskerville", "Amiri", "IBM Plex Sans Arabic", serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
 
   --color-background: var(--background);
   --color-foreground: var(--foreground);
