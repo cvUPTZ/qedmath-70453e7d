@@ -51,9 +51,10 @@ export type Database = {
           ai_breakdown: Json | null
           ai_evaluated_at: string | null
           ai_score: number | null
-          case_study: Json
+          case_study: Json | null
+          cat_session_id: string | null
           contributed_curricula: string | null
-          contribution_types: string[]
+          contribution_types: string[] | null
           created_at: string
           cv_path: string | null
           designed_official_exams: string | null
@@ -61,30 +62,31 @@ export type Database = {
           extra_files: Json | null
           full_name: string
           id: string
-          institution_type: string
-          levels_taught: string[]
-          pedagogy_answers: Json
+          institution_type: string | null
+          levels_taught: string[] | null
+          pedagogy_answers: Json | null
           phone: string
-          practical_test: Json
+          practical_test: Json | null
           research_work: string | null
           status: Database["public"]["Enums"]["application_status"]
-          subjects: string
+          subjects: string | null
           trained_teachers: string | null
           updated_at: string
-          vision_answers: Json
-          weekly_hours: number
+          vision_answers: Json | null
+          weekly_hours: number | null
           wilaya: string
           work_certificate_path: string | null
-          workplace: string
+          workplace: string | null
           years_experience: number
         }
         Insert: {
           ai_breakdown?: Json | null
           ai_evaluated_at?: string | null
           ai_score?: number | null
-          case_study: Json
+          case_study?: Json | null
+          cat_session_id?: string | null
           contributed_curricula?: string | null
-          contribution_types: string[]
+          contribution_types?: string[] | null
           created_at?: string
           cv_path?: string | null
           designed_official_exams?: string | null
@@ -92,30 +94,31 @@ export type Database = {
           extra_files?: Json | null
           full_name: string
           id?: string
-          institution_type: string
-          levels_taught: string[]
-          pedagogy_answers: Json
+          institution_type?: string | null
+          levels_taught?: string[] | null
+          pedagogy_answers?: Json | null
           phone: string
-          practical_test: Json
+          practical_test?: Json | null
           research_work?: string | null
           status?: Database["public"]["Enums"]["application_status"]
-          subjects: string
+          subjects?: string | null
           trained_teachers?: string | null
           updated_at?: string
-          vision_answers: Json
-          weekly_hours: number
+          vision_answers?: Json | null
+          weekly_hours?: number | null
           wilaya: string
           work_certificate_path?: string | null
-          workplace: string
+          workplace?: string | null
           years_experience: number
         }
         Update: {
           ai_breakdown?: Json | null
           ai_evaluated_at?: string | null
           ai_score?: number | null
-          case_study?: Json
+          case_study?: Json | null
+          cat_session_id?: string | null
           contributed_curricula?: string | null
-          contribution_types?: string[]
+          contribution_types?: string[] | null
           created_at?: string
           cv_path?: string | null
           designed_official_exams?: string | null
@@ -123,22 +126,78 @@ export type Database = {
           extra_files?: Json | null
           full_name?: string
           id?: string
-          institution_type?: string
-          levels_taught?: string[]
-          pedagogy_answers?: Json
+          institution_type?: string | null
+          levels_taught?: string[] | null
+          pedagogy_answers?: Json | null
           phone?: string
-          practical_test?: Json
+          practical_test?: Json | null
           research_work?: string | null
           status?: Database["public"]["Enums"]["application_status"]
-          subjects?: string
+          subjects?: string | null
           trained_teachers?: string | null
           updated_at?: string
-          vision_answers?: Json
-          weekly_hours?: number
+          vision_answers?: Json | null
+          weekly_hours?: number | null
           wilaya?: string
           work_certificate_path?: string | null
-          workplace?: string
+          workplace?: string | null
           years_experience?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "applications_cat_session_id_fkey"
+            columns: ["cat_session_id"]
+            isOneToOne: false
+            referencedRelation: "cat_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cat_sessions: {
+        Row: {
+          ability_by_dim: Json
+          candidate_email: string
+          candidate_name: string
+          created_at: string
+          final_score: number | null
+          history: Json
+          id: string
+          max_questions: number
+          questions_asked: number
+          scores_by_dim: Json
+          status: string
+          summary: string | null
+          updated_at: string
+        }
+        Insert: {
+          ability_by_dim?: Json
+          candidate_email: string
+          candidate_name: string
+          created_at?: string
+          final_score?: number | null
+          history?: Json
+          id?: string
+          max_questions?: number
+          questions_asked?: number
+          scores_by_dim?: Json
+          status?: string
+          summary?: string | null
+          updated_at?: string
+        }
+        Update: {
+          ability_by_dim?: Json
+          candidate_email?: string
+          candidate_name?: string
+          created_at?: string
+          final_score?: number | null
+          history?: Json
+          id?: string
+          max_questions?: number
+          questions_asked?: number
+          scores_by_dim?: Json
+          status?: string
+          summary?: string | null
+          updated_at?: string
         }
         Relationships: []
       }
