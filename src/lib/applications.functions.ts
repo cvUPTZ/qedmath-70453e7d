@@ -66,6 +66,7 @@ export const submitApplication = createServerFn({ method: "POST" })
         id,
         ...data,
         extra_files: data.extra_files ?? [],
+        submitted_at: new Date().toISOString(),
       });
 
     if (error) throw new Error(error.message);
