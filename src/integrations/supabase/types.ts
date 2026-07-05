@@ -231,6 +231,69 @@ export type Database = {
         }
         Relationships: []
       }
+      visits: {
+        Row: {
+          city: string | null
+          country: string | null
+          country_code: string | null
+          created_at: string
+          device_type: string | null
+          id: string
+          ip: string | null
+          latitude: number | null
+          longitude: number | null
+          path: string
+          referrer: string | null
+          referrer_source: string | null
+          region: string | null
+          session_id: string | null
+          user_agent: string | null
+          utm_campaign: string | null
+          utm_medium: string | null
+          utm_source: string | null
+        }
+        Insert: {
+          city?: string | null
+          country?: string | null
+          country_code?: string | null
+          created_at?: string
+          device_type?: string | null
+          id?: string
+          ip?: string | null
+          latitude?: number | null
+          longitude?: number | null
+          path: string
+          referrer?: string | null
+          referrer_source?: string | null
+          region?: string | null
+          session_id?: string | null
+          user_agent?: string | null
+          utm_campaign?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+        }
+        Update: {
+          city?: string | null
+          country?: string | null
+          country_code?: string | null
+          created_at?: string
+          device_type?: string | null
+          id?: string
+          ip?: string | null
+          latitude?: number | null
+          longitude?: number | null
+          path?: string
+          referrer?: string | null
+          referrer_source?: string | null
+          region?: string | null
+          session_id?: string | null
+          user_agent?: string | null
+          utm_campaign?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

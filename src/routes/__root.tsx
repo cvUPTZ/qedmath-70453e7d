@@ -13,6 +13,7 @@ import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { Toaster } from "@/components/ui/sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { useVisitTracker } from "@/lib/use-visit-tracker";
 
 function NotFoundComponent() {
   return (
@@ -135,6 +136,7 @@ function RootShell({ children }: { children: ReactNode }) {
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   const router = useRouter();
+  useVisitTracker();
 
   useEffect(() => {
     const { data } = supabase.auth.onAuthStateChange((event) => {
