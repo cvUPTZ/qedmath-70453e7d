@@ -257,6 +257,19 @@ function ApplyPage() {
   const handleSubmit = async () => {
     setSubmitting(true);
     try {
+      const startedAtRaw = (() => {
+        try {
+          return localStorage.getItem(STARTED_AT_KEY);
+        } catch {
+          return null;
+        }
+      })();
+      const startedAt = startedAtRaw ?? new Date().toISOString();
+      const fillDurationSeconds = Math.max(
+        0,
+        Math.round((Date.now() - new Date(startedAt).getTime()) / 1000),
+      );
+
       const payload: ApplicationInput = {
         full_name: form.full_name.trim(),
         email: form.email.trim(),
@@ -280,9 +293,15 @@ function ApplyPage() {
         cv_path: form.cv_path,
         work_certificate_path: form.work_certificate_path,
         extra_files: form.extra_files,
+        started_at: startedAt,
+        fill_duration_seconds: fillDurationSeconds,
       };
       await submit({ data: payload });
-      localStorage.removeItem(STORAGE_KEY);
+      try {
+        localStorage.removeItem(STORAGE_KEY);
+        localStorage.removeItem(STARTED_AT_KEY);
+      } catch {}
+      toast.success("تم إرسال طلبك بنجاح ✅ سنراجعه ونعود إليك قريبًا.");
       navigate({ to: "/apply/success" });
     } catch (err) {
       toast.error((err as Error).message ?? "فشل الإرسال");
