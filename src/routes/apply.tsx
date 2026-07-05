@@ -94,6 +94,7 @@ const EMPTY: FormState = {
 };
 
 const STORAGE_KEY = "qed_application_draft_v1";
+const STARTED_AT_KEY = "qed_application_started_at_v1";
 
 // Guards against a corrupted draft: if a previous submission attempt failed,
 // some code path may have written the raw error message into a form field
