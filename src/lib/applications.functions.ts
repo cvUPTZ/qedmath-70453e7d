@@ -48,6 +48,8 @@ const ApplicationSchema = z.object({
   cv_path: z.string().optional().nullable(),
   work_certificate_path: z.string().optional().nullable(),
   extra_files: z.array(z.string()).optional().default([]),
+  started_at: z.string().datetime().optional().nullable(),
+  fill_duration_seconds: z.number().int().min(0).max(60 * 60 * 24 * 30).optional().nullable(),
 });
 
 export type ApplicationInput = z.infer<typeof ApplicationSchema>;
@@ -64,6 +66,7 @@ export const submitApplication = createServerFn({ method: "POST" })
         id,
         ...data,
         extra_files: data.extra_files ?? [],
+        submitted_at: new Date().toISOString(),
       });
 
     if (error) throw new Error(error.message);

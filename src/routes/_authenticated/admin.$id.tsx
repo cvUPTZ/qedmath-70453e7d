@@ -85,6 +85,17 @@ function AdminDetail() {
                 {statusLabel(app.status)}
               </span>
             </div>
+            {app.fill_duration_seconds != null && (
+              <div className="mt-4 rounded-lg border border-border bg-parchment/50 px-3 py-2 text-xs text-muted-foreground">
+                <span className="font-medium text-ink">مدة ملء الاستمارة:</span>{" "}
+                {formatDuration(app.fill_duration_seconds)}
+                {app.fill_duration_seconds < 300 && (
+                  <span className="ms-2 rounded-full bg-destructive/10 px-2 py-0.5 text-[11px] font-medium text-destructive">
+                    مدة قصيرة جدًا — احتمال استعمال أدوات ذكاء اصطناعي
+                  </span>
+                )}
+              </div>
+            )}
           </div>
 
           <Section title="الخبرة المهنية">
@@ -276,4 +287,14 @@ function Bar({ label, value }: { label: string; value: number }) {
       </div>
     </div>
   );
+}
+
+function formatDuration(seconds: number): string {
+  if (seconds < 60) return `${seconds} ثانية`;
+  const m = Math.floor(seconds / 60);
+  const s = seconds % 60;
+  if (m < 60) return s ? `${m} د ${s} ث` : `${m} دقيقة`;
+  const h = Math.floor(m / 60);
+  const rm = m % 60;
+  return rm ? `${h} س ${rm} د` : `${h} ساعة`;
 }
