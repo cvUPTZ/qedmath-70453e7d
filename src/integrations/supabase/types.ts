@@ -60,6 +60,7 @@ export type Database = {
           designed_official_exams: string | null
           email: string
           extra_files: Json | null
+          fill_duration_seconds: number | null
           full_name: string
           id: string
           institution_type: string | null
@@ -68,8 +69,10 @@ export type Database = {
           phone: string
           practical_test: Json | null
           research_work: string | null
+          started_at: string | null
           status: Database["public"]["Enums"]["application_status"]
           subjects: string | null
+          submitted_at: string | null
           trained_teachers: string | null
           updated_at: string
           vision_answers: Json | null
@@ -92,6 +95,7 @@ export type Database = {
           designed_official_exams?: string | null
           email: string
           extra_files?: Json | null
+          fill_duration_seconds?: number | null
           full_name: string
           id?: string
           institution_type?: string | null
@@ -100,8 +104,10 @@ export type Database = {
           phone: string
           practical_test?: Json | null
           research_work?: string | null
+          started_at?: string | null
           status?: Database["public"]["Enums"]["application_status"]
           subjects?: string | null
+          submitted_at?: string | null
           trained_teachers?: string | null
           updated_at?: string
           vision_answers?: Json | null
@@ -124,6 +130,7 @@ export type Database = {
           designed_official_exams?: string | null
           email?: string
           extra_files?: Json | null
+          fill_duration_seconds?: number | null
           full_name?: string
           id?: string
           institution_type?: string | null
@@ -132,8 +139,10 @@ export type Database = {
           phone?: string
           practical_test?: Json | null
           research_work?: string | null
+          started_at?: string | null
           status?: Database["public"]["Enums"]["application_status"]
           subjects?: string | null
+          submitted_at?: string | null
           trained_teachers?: string | null
           updated_at?: string
           vision_answers?: Json | null
