@@ -171,6 +171,11 @@ function ApplyPage() {
       const raw = localStorage.getItem(STORAGE_KEY);
       if (raw) setForm({ ...EMPTY, ...JSON.parse(raw) });
     } catch {}
+    try {
+      if (!localStorage.getItem(STARTED_AT_KEY)) {
+        localStorage.setItem(STARTED_AT_KEY, new Date().toISOString());
+      }
+    } catch {}
     setHydrated(true);
   }, []);
   useEffect(() => {
