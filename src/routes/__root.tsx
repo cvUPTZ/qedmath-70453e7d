@@ -136,6 +136,7 @@ function RootShell({ children }: { children: ReactNode }) {
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   const router = useRouter();
+  useVisitTracker();
 
   useEffect(() => {
     const { data } = supabase.auth.onAuthStateChange((event) => {
