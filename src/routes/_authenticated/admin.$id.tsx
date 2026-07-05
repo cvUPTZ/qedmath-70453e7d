@@ -85,6 +85,17 @@ function AdminDetail() {
                 {statusLabel(app.status)}
               </span>
             </div>
+            {app.fill_duration_seconds != null && (
+              <div className="mt-4 rounded-lg border border-border bg-parchment/50 px-3 py-2 text-xs text-muted-foreground">
+                <span className="font-medium text-ink">مدة ملء الاستمارة:</span>{" "}
+                {formatDuration(app.fill_duration_seconds)}
+                {app.fill_duration_seconds < 300 && (
+                  <span className="ms-2 rounded-full bg-destructive/10 px-2 py-0.5 text-[11px] font-medium text-destructive">
+                    مدة قصيرة جدًا — احتمال استعمال أدوات ذكاء اصطناعي
+                  </span>
+                )}
+              </div>
+            )}
           </div>
 
           <Section title="الخبرة المهنية">
