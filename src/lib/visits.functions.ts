@@ -17,7 +17,7 @@ const InputSchema = z.object({
 export const logVisit = createServerFn({ method: "POST" })
   .inputValidator((data: unknown) => InputSchema.parse(data))
   .handler(async ({ data }) => {
-    const req = getWebRequest();
+    const req = getRequest();
     const h = req?.headers;
 
     // Get IP from common proxy headers
