@@ -66,17 +66,18 @@ export const upsertQuestion = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => QuestionInput.parse(d))
   .handler(async ({ data, context }) => {
     await assertAdmin(context);
-    const row = { ...data, options: data.options as any };
-    if (row.id) {
-      const { error } = await context.supabase.from("questions").update(row).eq("id", row.id);
+    const { id, ...rest } = data;
+    const row: any = { ...rest, options: rest.options };
+    if (id) {
+      const { error } = await context.supabase.from("questions").update(row).eq("id", id);
       if (error) throw new Error(error.message);
-      return { id: row.id };
+      return { id };
     }
-    delete (row as any).id;
     const { data: created, error } = await context.supabase.from("questions").insert(row).select("id").single();
     if (error) throw new Error(error.message);
     return { id: created.id as string };
   });
+
 
 export const reviewQuestion = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
