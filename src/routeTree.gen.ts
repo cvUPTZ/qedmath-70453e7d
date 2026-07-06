@@ -18,7 +18,10 @@ import { Route as ApplySuccessRouteImport } from './routes/apply.success'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin.index'
 import { Route as AuthenticatedAdminVisitsRouteImport } from './routes/_authenticated/admin.visits'
+import { Route as AuthenticatedAdminDiagnosticRouteImport } from './routes/_authenticated/admin.diagnostic'
 import { Route as AuthenticatedAdminIdRouteImport } from './routes/_authenticated/admin.$id'
+import { Route as AuthenticatedAdminDiagnosticRunRouteImport } from './routes/_authenticated/admin.diagnostic.run'
+import { Route as AuthenticatedAdminDiagnosticSessionIdRouteImport } from './routes/_authenticated/admin.diagnostic.session.$id'
 
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
@@ -65,11 +68,29 @@ const AuthenticatedAdminVisitsRoute =
     path: '/visits',
     getParentRoute: () => AuthenticatedAdminRoute,
   } as any)
+const AuthenticatedAdminDiagnosticRoute =
+  AuthenticatedAdminDiagnosticRouteImport.update({
+    id: '/diagnostic',
+    path: '/diagnostic',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
 const AuthenticatedAdminIdRoute = AuthenticatedAdminIdRouteImport.update({
   id: '/$id',
   path: '/$id',
   getParentRoute: () => AuthenticatedAdminRoute,
 } as any)
+const AuthenticatedAdminDiagnosticRunRoute =
+  AuthenticatedAdminDiagnosticRunRouteImport.update({
+    id: '/run',
+    path: '/run',
+    getParentRoute: () => AuthenticatedAdminDiagnosticRoute,
+  } as any)
+const AuthenticatedAdminDiagnosticSessionIdRoute =
+  AuthenticatedAdminDiagnosticSessionIdRouteImport.update({
+    id: '/session/$id',
+    path: '/session/$id',
+    getParentRoute: () => AuthenticatedAdminDiagnosticRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -79,8 +100,11 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AuthenticatedAdminRouteWithChildren
   '/apply/success': typeof ApplySuccessRoute
   '/admin/$id': typeof AuthenticatedAdminIdRoute
+  '/admin/diagnostic': typeof AuthenticatedAdminDiagnosticRouteWithChildren
   '/admin/visits': typeof AuthenticatedAdminVisitsRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
+  '/admin/diagnostic/run': typeof AuthenticatedAdminDiagnosticRunRoute
+  '/admin/diagnostic/session/$id': typeof AuthenticatedAdminDiagnosticSessionIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -89,8 +113,11 @@ export interface FileRoutesByTo {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/apply/success': typeof ApplySuccessRoute
   '/admin/$id': typeof AuthenticatedAdminIdRoute
+  '/admin/diagnostic': typeof AuthenticatedAdminDiagnosticRouteWithChildren
   '/admin/visits': typeof AuthenticatedAdminVisitsRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
+  '/admin/diagnostic/run': typeof AuthenticatedAdminDiagnosticRunRoute
+  '/admin/diagnostic/session/$id': typeof AuthenticatedAdminDiagnosticSessionIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -102,8 +129,11 @@ export interface FileRoutesById {
   '/_authenticated/admin': typeof AuthenticatedAdminRouteWithChildren
   '/apply/success': typeof ApplySuccessRoute
   '/_authenticated/admin/$id': typeof AuthenticatedAdminIdRoute
+  '/_authenticated/admin/diagnostic': typeof AuthenticatedAdminDiagnosticRouteWithChildren
   '/_authenticated/admin/visits': typeof AuthenticatedAdminVisitsRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
+  '/_authenticated/admin/diagnostic/run': typeof AuthenticatedAdminDiagnosticRunRoute
+  '/_authenticated/admin/diagnostic/session/$id': typeof AuthenticatedAdminDiagnosticSessionIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -115,8 +145,11 @@ export interface FileRouteTypes {
     | '/admin'
     | '/apply/success'
     | '/admin/$id'
+    | '/admin/diagnostic'
     | '/admin/visits'
     | '/admin/'
+    | '/admin/diagnostic/run'
+    | '/admin/diagnostic/session/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -125,8 +158,11 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/apply/success'
     | '/admin/$id'
+    | '/admin/diagnostic'
     | '/admin/visits'
     | '/admin'
+    | '/admin/diagnostic/run'
+    | '/admin/diagnostic/session/$id'
   id:
     | '__root__'
     | '/'
@@ -137,8 +173,11 @@ export interface FileRouteTypes {
     | '/_authenticated/admin'
     | '/apply/success'
     | '/_authenticated/admin/$id'
+    | '/_authenticated/admin/diagnostic'
     | '/_authenticated/admin/visits'
     | '/_authenticated/admin/'
+    | '/_authenticated/admin/diagnostic/run'
+    | '/_authenticated/admin/diagnostic/session/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -214,6 +253,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminVisitsRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
+    '/_authenticated/admin/diagnostic': {
+      id: '/_authenticated/admin/diagnostic'
+      path: '/diagnostic'
+      fullPath: '/admin/diagnostic'
+      preLoaderRoute: typeof AuthenticatedAdminDiagnosticRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
     '/_authenticated/admin/$id': {
       id: '/_authenticated/admin/$id'
       path: '/$id'
@@ -221,17 +267,51 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminIdRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
+    '/_authenticated/admin/diagnostic/run': {
+      id: '/_authenticated/admin/diagnostic/run'
+      path: '/run'
+      fullPath: '/admin/diagnostic/run'
+      preLoaderRoute: typeof AuthenticatedAdminDiagnosticRunRouteImport
+      parentRoute: typeof AuthenticatedAdminDiagnosticRoute
+    }
+    '/_authenticated/admin/diagnostic/session/$id': {
+      id: '/_authenticated/admin/diagnostic/session/$id'
+      path: '/session/$id'
+      fullPath: '/admin/diagnostic/session/$id'
+      preLoaderRoute: typeof AuthenticatedAdminDiagnosticSessionIdRouteImport
+      parentRoute: typeof AuthenticatedAdminDiagnosticRoute
+    }
   }
 }
 
+interface AuthenticatedAdminDiagnosticRouteChildren {
+  AuthenticatedAdminDiagnosticRunRoute: typeof AuthenticatedAdminDiagnosticRunRoute
+  AuthenticatedAdminDiagnosticSessionIdRoute: typeof AuthenticatedAdminDiagnosticSessionIdRoute
+}
+
+const AuthenticatedAdminDiagnosticRouteChildren: AuthenticatedAdminDiagnosticRouteChildren =
+  {
+    AuthenticatedAdminDiagnosticRunRoute: AuthenticatedAdminDiagnosticRunRoute,
+    AuthenticatedAdminDiagnosticSessionIdRoute:
+      AuthenticatedAdminDiagnosticSessionIdRoute,
+  }
+
+const AuthenticatedAdminDiagnosticRouteWithChildren =
+  AuthenticatedAdminDiagnosticRoute._addFileChildren(
+    AuthenticatedAdminDiagnosticRouteChildren,
+  )
+
 interface AuthenticatedAdminRouteChildren {
   AuthenticatedAdminIdRoute: typeof AuthenticatedAdminIdRoute
+  AuthenticatedAdminDiagnosticRoute: typeof AuthenticatedAdminDiagnosticRouteWithChildren
   AuthenticatedAdminVisitsRoute: typeof AuthenticatedAdminVisitsRoute
   AuthenticatedAdminIndexRoute: typeof AuthenticatedAdminIndexRoute
 }
 
 const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
   AuthenticatedAdminIdRoute: AuthenticatedAdminIdRoute,
+  AuthenticatedAdminDiagnosticRoute:
+    AuthenticatedAdminDiagnosticRouteWithChildren,
   AuthenticatedAdminVisitsRoute: AuthenticatedAdminVisitsRoute,
   AuthenticatedAdminIndexRoute: AuthenticatedAdminIndexRoute,
 }
@@ -270,13 +350,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

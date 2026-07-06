@@ -210,6 +210,372 @@ export type Database = {
         }
         Relationships: []
       }
+      curriculum_topics: {
+        Row: {
+          code: string
+          created_at: string
+          grade: string
+          id: string
+          kind: string
+          name_ar: string
+          parent_id: string | null
+          sort_order: number
+          source_ref: string | null
+          updated_at: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          grade?: string
+          id?: string
+          kind?: string
+          name_ar: string
+          parent_id?: string | null
+          sort_order?: number
+          source_ref?: string | null
+          updated_at?: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          grade?: string
+          id?: string
+          kind?: string
+          name_ar?: string
+          parent_id?: string | null
+          sort_order?: number
+          source_ref?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "curriculum_topics_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "curriculum_topics"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      diagnostic_sessions: {
+        Row: {
+          completed_at: string | null
+          evidence: Json
+          id: string
+          started_at: string
+          started_by: string | null
+          status: Database["public"]["Enums"]["session_status"]
+          student_label: string | null
+          target_skill_id: string | null
+          trail: Json
+        }
+        Insert: {
+          completed_at?: string | null
+          evidence?: Json
+          id?: string
+          started_at?: string
+          started_by?: string | null
+          status?: Database["public"]["Enums"]["session_status"]
+          student_label?: string | null
+          target_skill_id?: string | null
+          trail?: Json
+        }
+        Update: {
+          completed_at?: string | null
+          evidence?: Json
+          id?: string
+          started_at?: string
+          started_by?: string | null
+          status?: Database["public"]["Enums"]["session_status"]
+          student_label?: string | null
+          target_skill_id?: string | null
+          trail?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "diagnostic_sessions_target_skill_id_fkey"
+            columns: ["target_skill_id"]
+            isOneToOne: false
+            referencedRelation: "skills"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      learning_outcomes: {
+        Row: {
+          created_at: string
+          id: string
+          level: string
+          skill_id: string
+          sort_order: number
+          statement_ar: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          level?: string
+          skill_id: string
+          sort_order?: number
+          statement_ar: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          level?: string
+          skill_id?: string
+          sort_order?: number
+          statement_ar?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "learning_outcomes_skill_id_fkey"
+            columns: ["skill_id"]
+            isOneToOne: false
+            referencedRelation: "skills"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      misconceptions: {
+        Row: {
+          code: string
+          created_at: string
+          description_ar: string
+          hypothesis_ar: string | null
+          id: string
+          skill_id: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          description_ar: string
+          hypothesis_ar?: string | null
+          id?: string
+          skill_id: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          description_ar?: string
+          hypothesis_ar?: string | null
+          id?: string
+          skill_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "misconceptions_skill_id_fkey"
+            columns: ["skill_id"]
+            isOneToOne: false
+            referencedRelation: "skills"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      question_reviews: {
+        Row: {
+          created_at: string
+          id: string
+          notes: string | null
+          question_id: string
+          reviewer_id: string | null
+          verdict: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          notes?: string | null
+          question_id: string
+          reviewer_id?: string | null
+          verdict: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          notes?: string | null
+          question_id?: string
+          reviewer_id?: string | null
+          verdict?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "question_reviews_question_id_fkey"
+            columns: ["question_id"]
+            isOneToOne: false
+            referencedRelation: "questions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      questions: {
+        Row: {
+          ai_meta: Json | null
+          bloom: string
+          correct_index: number
+          created_at: string
+          created_by: string | null
+          id: string
+          kind: Database["public"]["Enums"]["question_kind"]
+          options: Json
+          parent_gold_id: string | null
+          probe_key: string | null
+          probe_tree: Json | null
+          prompt_ar: string
+          skill_id: string | null
+          status: Database["public"]["Enums"]["question_status"]
+          times_correct: number
+          times_used: number
+          updated_at: string
+        }
+        Insert: {
+          ai_meta?: Json | null
+          bloom?: string
+          correct_index?: number
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          kind?: Database["public"]["Enums"]["question_kind"]
+          options?: Json
+          parent_gold_id?: string | null
+          probe_key?: string | null
+          probe_tree?: Json | null
+          prompt_ar: string
+          skill_id?: string | null
+          status?: Database["public"]["Enums"]["question_status"]
+          times_correct?: number
+          times_used?: number
+          updated_at?: string
+        }
+        Update: {
+          ai_meta?: Json | null
+          bloom?: string
+          correct_index?: number
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          kind?: Database["public"]["Enums"]["question_kind"]
+          options?: Json
+          parent_gold_id?: string | null
+          probe_key?: string | null
+          probe_tree?: Json | null
+          prompt_ar?: string
+          skill_id?: string | null
+          status?: Database["public"]["Enums"]["question_status"]
+          times_correct?: number
+          times_used?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "questions_parent_gold_id_fkey"
+            columns: ["parent_gold_id"]
+            isOneToOne: false
+            referencedRelation: "questions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "questions_skill_id_fkey"
+            columns: ["skill_id"]
+            isOneToOne: false
+            referencedRelation: "skills"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      session_answers: {
+        Row: {
+          chosen_index: number | null
+          created_at: string
+          id: string
+          is_correct: boolean | null
+          is_probe: boolean
+          ms_elapsed: number | null
+          probe_node_id: string | null
+          question_id: string | null
+          session_id: string
+        }
+        Insert: {
+          chosen_index?: number | null
+          created_at?: string
+          id?: string
+          is_correct?: boolean | null
+          is_probe?: boolean
+          ms_elapsed?: number | null
+          probe_node_id?: string | null
+          question_id?: string | null
+          session_id: string
+        }
+        Update: {
+          chosen_index?: number | null
+          created_at?: string
+          id?: string
+          is_correct?: boolean | null
+          is_probe?: boolean
+          ms_elapsed?: number | null
+          probe_node_id?: string | null
+          question_id?: string | null
+          session_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "session_answers_question_id_fkey"
+            columns: ["question_id"]
+            isOneToOne: false
+            referencedRelation: "questions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "session_answers_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "diagnostic_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      skills: {
+        Row: {
+          bloom: string
+          code: string
+          created_at: string
+          description_ar: string | null
+          id: string
+          name_ar: string
+          prerequisites: string[]
+          topic_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          bloom?: string
+          code: string
+          created_at?: string
+          description_ar?: string | null
+          id?: string
+          name_ar: string
+          prerequisites?: string[]
+          topic_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          bloom?: string
+          code?: string
+          created_at?: string
+          description_ar?: string | null
+          id?: string
+          name_ar?: string
+          prerequisites?: string[]
+          topic_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "skills_topic_id_fkey"
+            columns: ["topic_id"]
+            isOneToOne: false
+            referencedRelation: "curriculum_topics"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -316,6 +682,15 @@ export type Database = {
         | "trial"
         | "accepted"
         | "rejected"
+      question_kind: "gold" | "ai" | "probe"
+      question_status:
+        | "draft"
+        | "ai_generated"
+        | "ai_reviewed"
+        | "expert_reviewed"
+        | "approved"
+        | "retired"
+      session_status: "running" | "completed" | "abandoned"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -452,6 +827,16 @@ export const Constants = {
         "accepted",
         "rejected",
       ],
+      question_kind: ["gold", "ai", "probe"],
+      question_status: [
+        "draft",
+        "ai_generated",
+        "ai_reviewed",
+        "expert_reviewed",
+        "approved",
+        "retired",
+      ],
+      session_status: ["running", "completed", "abandoned"],
     },
   },
 } as const
