@@ -1,72 +1,107 @@
-# منصة QED — تقييم أساتذة الرياضيات
 
-منصة عربية RTL بجودة Apple/Linear لاستقبال طلبات أساتذة الرياضيات وتقييمها، مع لوحة إدارة داخلية وتقييم آلي.
+# نظام التشخيص الذكي — للإدارة فقط
 
-## المكدس التقني
-- TanStack Start + Tailwind v4 (موجودان)
-- Lovable Cloud (Supabase) للتخزين والمصادقة ورفع الملفات
-- التقييم الآلي عبر Lovable AI Gateway (server function)
+بناء وحدة تشخيص كاملة داخل لوحة الإدارة (`/admin/diagnostic/*`) مستوحاة من `diagnostic_2.html` ومبنية على منهاج السنة الأولى متوسط (من الـ markdown). لا يظهر شيء منها للزوار العاديين.
 
-## الصفحات (المسارات)
+## 1. الهيكلية العامة (17 مرحلة، مقسّمة إلى 4 لوحات)
+
 ```
-/                         الصفحة الرئيسية (Hero + CTA)
-/apply                    رحلة التقديم متعددة المراحل (7 مراحل)
-/apply/success            رسالة الشكر
-/admin                    تسجيل دخول المشرف
-/_authenticated/admin     لوحة الطلبات (قائمة + فلاتر)
-/_authenticated/admin/$id تفاصيل طلب واحد + ملاحظات + حالة
+لوحة (١) المنهج والمعرفة
+  01 تحليل المنهاج → 02 Knowledge Graph → 03 Skill Graph → 04 اختيار مهارة
+
+لوحة (٢) بناء السؤال
+  05 نواتج التعلم → 06 الأخطاء الشائعة → 07 فرضيات التشخيص
+  → 08 أسئلة مرجعية (Gold) → 09 مراجعة واعتماد
+
+لوحة (٣) التوسيع الآلي
+  10 توليد أسئلة مكافئة (AI) → 11 مراجعة جودة آلية
+  → 12 مراجعة خبير → 13 Question Pool
+
+لوحة (٤) التشغيل والتحسين
+  14 جلسات التشخيص → 15 بيانات الأداء
+  → 16 تحليل جودة كل سؤال → 17 تحسين/استبعاد
 ```
 
-## رحلة التقديم (Multi-step, progress bar)
-1. التعريف بالمترشح
-2. الخبرة المهنية
-3. التفكير التربوي (5 أسئلة مفتوحة طويلة)
-4. دراسة حالة (`-7 + 6 × (-4)`) — ٣ أسباب + ٣ أسئلة تشخيصية
-5. الرؤية (٤ أسئلة)
-6. التعاون (ساعات + أنواع مساهمة متعددة)
-7. الاختبار العملي (٢٠–٣٠د): ٣ أسئلة تشخيصية QED حقيقية، لكل منها تحليل + تحسين مقترح
-8. رفع الملفات (CV إلزامي، شهادة عمل + أعمال اختيارية) — Supabase Storage
-- حفظ تلقائي في localStorage بين الخطوات
-- تحقق Zod لكل مرحلة
+كل مرحلة = بطاقة قابلة للطي بحالة (مسودّة / مُراجَعة / معتمَدة).
 
-## قاعدة البيانات
-جداول:
-- `applications` — كل الحقول + JSONB للأقسام الطويلة + `status` enum + `ai_score` + `ai_breakdown` jsonb + `created_at`
-- `application_notes` — ملاحظات داخلية (admin_id, note, created_at)
-- `user_roles` + enum `app_role` (admin) + `has_role()` security definer (وفق قواعد المشروع)
-- Storage bucket خاص `applications` (private) للملفات
+## 2. الصفحات الجديدة
 
-RLS:
-- INSERT مفتوح لأي زائر على `applications` (تقديم عام)
-- SELECT/UPDATE للمشرفين فقط عبر `has_role(auth.uid(),'admin')`
-- الملاحظات: مشرفون فقط
-
-## التقييم الآلي (بعد الإرسال)
-Server function تستدعي Lovable AI (google/gemini-2.5-flash) مع prompt عربي منظم يُرجع JSON:
 ```
-{ pedagogical_analysis, error_interpretation, systematic_thinking,
-  field_experience, communication, collaboration, innovation, total }
+/admin/diagnostic                لوحة تحكم بخط الأنابيب الـ17
+/admin/diagnostic/skills         Knowledge + Skill graph (شجرة)
+/admin/diagnostic/skills/$id     تفاصيل مهارة: نواتج + أخطاء + فرضيات
+/admin/diagnostic/questions      Question Pool (فلترة + حالة)
+/admin/diagnostic/questions/new  محرر سؤال (Gold أو AI)
+/admin/diagnostic/sessions       جلسات التشخيص + تشغيل تجريبي
+/admin/diagnostic/sessions/$id   تقرير جلسة (Trail + Evidence)
+/admin/diagnostic/analytics      جودة الأسئلة (نسبة النجاح، التمييز)
 ```
-يُخزن في `ai_score` و `ai_breakdown`. يظهر فقط في لوحة الإدارة.
 
-## لوحة الإدارة
-- بحث بالاسم/الولاية
-- فلاتر: سنوات الخبرة (شرائح)، المستوى الدراسي، الحالة
-- ترتيب حسب التقييم الآلي
-- تفاصيل الطلب: كل الإجابات + روابط الملفات + شريط التقييم الآلي المفصّل + ملاحظات داخلية + تغيير الحالة (جديد/قيد المراجعة/مقابلة/تجربة عملية/مقبول/مرفوض)
+المشغّل التفاعلي (الشجرة + الـ probe) يعمل بنفس منطق `diagnostic_2.html`
+لكن بمكوّنات React + Tailwind بألوان المشروع، RTL، وحفظ الجلسة في القاعدة.
 
-## التصميم
-- RTL كامل (`dir="rtl"` على `<html>`, `lang="ar"`)
-- خطوط: **IBM Plex Sans Arabic** للنصوص + **Tajawal** للعناوين (عبر `<link>` في `__root.tsx`)
-- لوحة ألوان هادئة أكاديمية: خلفية عاجية، أسود فحمي، أخضر زيتوني مميّز `oklch(0.55 0.12 155)` كلون علامة QED
-- بدون تدرجات بنفسجية؛ حواف ناعمة، ظلال دقيقة، مسافات سخية
-- رسوم متحركة خفيفة بين المراحل (fade + slide)
-- كل الألوان/الخطوط كـ tokens في `src/styles.css`
+## 3. قاعدة البيانات (كل الوصول للإدارة فقط)
 
-## الأمن
-- تحقق Zod على العميل + قيود طول في الجدول
-- rate-limit بسيط في server function للإرسال (حماية من السبام)
-- ملفات: تحقق نوع/حجم (PDF/DOCX ≤ 10MB)
+جداول جديدة، كلها RLS: SELECT/INSERT/UPDATE محصور بـ `has_role(auth.uid(),'admin')`:
+
+- `curriculum_topics` — عقد الـ Knowledge Graph (unit, chapter, topic, parent_id, grade, source_ref)
+- `skills` — عقد الـ Skill Graph (code, name_ar, bloom, topic_id, prerequisites uuid[])
+- `learning_outcomes` — نواتج تعلم لكل مهارة (skill_id, statement_ar, level)
+- `misconceptions` — أخطاء شائعة (skill_id, code, description_ar, hypothesis_ar)
+- `questions` — بنك الأسئلة (skill_id, type: gold|ai|probe, prompt_ar, options jsonb, correct_index, bloom, status: draft|ai_reviewed|expert_reviewed|approved|retired, parent_gold_id, probe_tree jsonb, ai_meta jsonb)
+- `question_reviews` — قرارات المراجعة (question_id, reviewer_id, verdict, notes)
+- `diagnostic_sessions` — جلسة تشغيل (started_by, target_skill_id, status, evidence jsonb, trail jsonb, completed_at)
+- `session_answers` — إجابة لكل سؤال في الجلسة (session_id, question_id, is_probe, chosen_index, correct, ms_elapsed)
+- `question_stats` — عرض/تجميع مادّي: p_value، discrimination، عدد الظهور
+
+سياسات: `GRANT SELECT, INSERT, UPDATE, DELETE ... TO authenticated` مع `USING (public.has_role(auth.uid(),'admin'))` على كل جدول + `GRANT ALL ... TO service_role`.
+
+بذر (seed) أولي في نفس الـ migration: 6–8 مواضيع + 10–12 مهارة مأخوذة من الـ markdown (الأعداد النسبية، المعادلات من الدرجة الأولى، النشر والتحليل، فيثاغورس، الكسور، المساحات، التحويلات الوحدوية…) + 3 شجرات probe مطابقة لما في `diagnostic_2.html` (sign / transposition / pythagoras).
+
+## 4. دوال الخادم (createServerFn، محمية بـ requireSupabaseAuth + فحص admin)
+
+- `listSkills`, `getSkill`, `upsertSkill`
+- `listQuestions(filters)`, `upsertQuestion`, `reviewQuestion`
+- `generateEquivalentQuestions(goldId, count)` — يستدعي Lovable AI Gateway (google/gemini-2.5-flash) وينشئ أسئلة `ai_reviewed`
+- `autoQualityCheck(questionId)` — فحص: صياغة عربية، صحة الإجابة، بدائل معقولة، مطابقة الناتج
+- `startSession(skillId)`, `submitAnswer(sessionId, questionId, chosenIndex, ms)`, `finishSession`
+- `computeQuestionStats(questionId)` — p-value + discrimination
+
+## 5. الواجهة (بأسلوب `diagnostic_2.html` مطبَّق على design tokens الحالية)
+
+- شريط جانبي (trail) يعرض تسلسل الأسئلة والـ probes مع نقاط ملوّنة
+- بطاقة سؤال بخط Tajawal، مع لوحة أخضر/أحمر عند الكشف
+- بانر عنبري (amber) للـ probe بنفس الأسلوب
+- شاشة نتيجة الجلسة: جدول Evidence + المفاهيم الخاطئة المكتشفة
+- مخطط بسيط لـ Skill Graph (شبكة أفقية داخل CSS grid، بدون مكتبات إضافية)
+- كل الحقول والأزرار عربية RTL، متسقة مع الألوان الموجودة
+
+## 6. التحكم بالوصول
+
+- الوحدة كاملة تحت `_authenticated/admin.diagnostic.*`
+- كل صفحة تتحقق من `isCurrentUserAdmin` (نفس النمط في `admin.visits.tsx`)
+- لا رابط ولا إشارة إليها من الواجهة العامة أو نموذج التقديم
+
+## 7. رابط في لوحة الإدارة الرئيسية
+
+إضافة بطاقة/زر "التشخيص التربوي" في `admin.index.tsx` بجانب "الزيارات".
+
+## 8. الترتيب التنفيذي
+
+1. Migration واحدة تنشئ كل الجداول + GRANT + RLS + بذر أولي
+2. دوال الخادم (`*.functions.ts`)
+3. الصفحات (لوحة تحكم → skills → questions → session runner → analytics)
+4. مكوّن مُشغّل التشخيص (Session runner) بنمط `diagnostic_2.html`
+5. زر في `admin.index.tsx`
+6. اختبار سريع بـ Playwright على `/admin/diagnostic`
+
+## تفاصيل تقنية
+
+- كل الدوال الحساسة تستخدم `requireSupabaseAuth` + فحص دور admin داخل الـ handler
+- استدعاء الذكاء الاصطناعي عبر `src/lib/ai-gateway.server.ts` الموجود
+- الأسئلة تحفظ `probe_tree` كـ JSONB بنفس بنية `diagnostic_2.html` لضمان توافق المُشغّل
+- لا تغييرات على منطق التقديم أو تتبع الزيارات
 
 ## سؤال قبل التنفيذ
-لا يوجد — كل شيء محدد في الطلب. سأمضي بتفعيل Lovable Cloud ثم البناء.
+
+هل الحجم مقبول للتنفيذ في جلسة واحدة (~15 ملفًا جديدًا + migration ضخمة)، أم تفضّل تقسيمه على مراحل (مثلاً: أولاً القاعدة + الـ Pool، ثم المُشغّل، ثم التحليلات)؟
