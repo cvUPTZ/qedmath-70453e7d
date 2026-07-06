@@ -55,6 +55,8 @@ function RunPage() {
   const [skillId, setSkillId] = useState<string>("");
   const [label, setLabel] = useState<string>("");
   const [session, setSession] = useState<{ id: string; questions: Question[] } | null>(null);
+  const [starting, setStarting] = useState(false);
+  const [startError, setStartError] = useState<string | null>(null);
 
   const startFn = useServerFn(startSession);
 
@@ -70,13 +72,22 @@ function RunPage() {
   const skills = skillsQ.data?.skills ?? [];
 
   const begin = async () => {
-    const res = await startFn({ data: { skill_id: skillId || null, student_label: label || null } });
-    if (!res.questions || res.questions.length === 0) {
-      alert("لا توجد أسئلة معتمدة لهذه المهارة بعد.");
-      return;
+    setStartError(null);
+    setStarting(true);
+    try {
+      const res = await startFn({ data: { skill_id: skillId || null, student_label: label || null } });
+      if (!res.questions || res.questions.length === 0) {
+        setStartError("لا توجد أسئلة معتمدة لهذه المهارة بعد. جرّب إزالة اختيار المهارة.");
+        return;
+      }
+      setSession({ id: res.session_id, questions: res.questions as any });
+      setPhase("running");
+    } catch (e: any) {
+      console.error("startSession failed", e);
+      setStartError(e?.message ?? String(e));
+    } finally {
+      setStarting(false);
     }
-    setSession({ id: res.session_id, questions: res.questions as any });
-    setPhase("running");
   };
 
   return (
@@ -117,10 +128,16 @@ function RunPage() {
             </div>
             <button
               onClick={begin}
-              className="inline-flex items-center gap-2 rounded-lg bg-ink px-4 py-2 text-sm text-parchment"
+              disabled={starting}
+              className="inline-flex items-center gap-2 rounded-lg bg-ink px-4 py-2 text-sm text-parchment disabled:opacity-60"
             >
-              <Play className="h-4 w-4" /> ابدأ الجلسة
+              <Play className="h-4 w-4" /> {starting ? "جارٍ البدء..." : "ابدأ الجلسة"}
             </button>
+            {startError && (
+              <p className="mt-2 rounded border border-destructive/40 bg-destructive/10 p-2 text-xs text-destructive">
+                {startError}
+              </p>
+            )}
           </div>
         )}
 
