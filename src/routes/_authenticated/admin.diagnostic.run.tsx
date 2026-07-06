@@ -128,10 +128,16 @@ function RunPage() {
             </div>
             <button
               onClick={begin}
-              className="inline-flex items-center gap-2 rounded-lg bg-ink px-4 py-2 text-sm text-parchment"
+              disabled={starting}
+              className="inline-flex items-center gap-2 rounded-lg bg-ink px-4 py-2 text-sm text-parchment disabled:opacity-60"
             >
-              <Play className="h-4 w-4" /> ابدأ الجلسة
+              <Play className="h-4 w-4" /> {starting ? "جارٍ البدء..." : "ابدأ الجلسة"}
             </button>
+            {startError && (
+              <p className="mt-2 rounded border border-destructive/40 bg-destructive/10 p-2 text-xs text-destructive">
+                {startError}
+              </p>
+            )}
           </div>
         )}
 
