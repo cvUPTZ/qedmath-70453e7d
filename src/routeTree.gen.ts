@@ -18,6 +18,7 @@ import { Route as ApplySuccessRouteImport } from './routes/apply.success'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin.index'
 import { Route as AuthenticatedAdminVisitsRouteImport } from './routes/_authenticated/admin.visits'
+import { Route as AuthenticatedAdminDiagnosticRouteImport } from './routes/_authenticated/admin.diagnostic'
 import { Route as AuthenticatedAdminIdRouteImport } from './routes/_authenticated/admin.$id'
 
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
@@ -65,6 +66,12 @@ const AuthenticatedAdminVisitsRoute =
     path: '/visits',
     getParentRoute: () => AuthenticatedAdminRoute,
   } as any)
+const AuthenticatedAdminDiagnosticRoute =
+  AuthenticatedAdminDiagnosticRouteImport.update({
+    id: '/diagnostic',
+    path: '/diagnostic',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
 const AuthenticatedAdminIdRoute = AuthenticatedAdminIdRouteImport.update({
   id: '/$id',
   path: '/$id',
@@ -79,6 +86,7 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AuthenticatedAdminRouteWithChildren
   '/apply/success': typeof ApplySuccessRoute
   '/admin/$id': typeof AuthenticatedAdminIdRoute
+  '/admin/diagnostic': typeof AuthenticatedAdminDiagnosticRoute
   '/admin/visits': typeof AuthenticatedAdminVisitsRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
 }
@@ -89,6 +97,7 @@ export interface FileRoutesByTo {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/apply/success': typeof ApplySuccessRoute
   '/admin/$id': typeof AuthenticatedAdminIdRoute
+  '/admin/diagnostic': typeof AuthenticatedAdminDiagnosticRoute
   '/admin/visits': typeof AuthenticatedAdminVisitsRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
 }
@@ -102,6 +111,7 @@ export interface FileRoutesById {
   '/_authenticated/admin': typeof AuthenticatedAdminRouteWithChildren
   '/apply/success': typeof ApplySuccessRoute
   '/_authenticated/admin/$id': typeof AuthenticatedAdminIdRoute
+  '/_authenticated/admin/diagnostic': typeof AuthenticatedAdminDiagnosticRoute
   '/_authenticated/admin/visits': typeof AuthenticatedAdminVisitsRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
 }
@@ -115,6 +125,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/apply/success'
     | '/admin/$id'
+    | '/admin/diagnostic'
     | '/admin/visits'
     | '/admin/'
   fileRoutesByTo: FileRoutesByTo
@@ -125,6 +136,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/apply/success'
     | '/admin/$id'
+    | '/admin/diagnostic'
     | '/admin/visits'
     | '/admin'
   id:
@@ -137,6 +149,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin'
     | '/apply/success'
     | '/_authenticated/admin/$id'
+    | '/_authenticated/admin/diagnostic'
     | '/_authenticated/admin/visits'
     | '/_authenticated/admin/'
   fileRoutesById: FileRoutesById
@@ -214,6 +227,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminVisitsRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
+    '/_authenticated/admin/diagnostic': {
+      id: '/_authenticated/admin/diagnostic'
+      path: '/diagnostic'
+      fullPath: '/admin/diagnostic'
+      preLoaderRoute: typeof AuthenticatedAdminDiagnosticRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
     '/_authenticated/admin/$id': {
       id: '/_authenticated/admin/$id'
       path: '/$id'
@@ -226,12 +246,14 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedAdminRouteChildren {
   AuthenticatedAdminIdRoute: typeof AuthenticatedAdminIdRoute
+  AuthenticatedAdminDiagnosticRoute: typeof AuthenticatedAdminDiagnosticRoute
   AuthenticatedAdminVisitsRoute: typeof AuthenticatedAdminVisitsRoute
   AuthenticatedAdminIndexRoute: typeof AuthenticatedAdminIndexRoute
 }
 
 const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
   AuthenticatedAdminIdRoute: AuthenticatedAdminIdRoute,
+  AuthenticatedAdminDiagnosticRoute: AuthenticatedAdminDiagnosticRoute,
   AuthenticatedAdminVisitsRoute: AuthenticatedAdminVisitsRoute,
   AuthenticatedAdminIndexRoute: AuthenticatedAdminIndexRoute,
 }
