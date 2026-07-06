@@ -13,6 +13,16 @@ import {
   autoQualityCheck,
   listSessions,
   questionAnalytics,
+  upsertTopic,
+  deleteTopic,
+  upsertSkill,
+  deleteSkill,
+  upsertOutcome,
+  deleteOutcome,
+  upsertMisconception,
+  deleteMisconception,
+  sampleForExpertReview,
+  computeAllQuestionStats,
 } from "@/lib/diagnostic.functions";
 import {
   ArrowRight,
@@ -28,6 +38,8 @@ import {
   X as XIcon,
   Wand2,
   Trash2,
+  RefreshCw,
+  Users,
 } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/admin/diagnostic")({
@@ -65,7 +77,8 @@ function DiagnosticHub() {
   const roleQ = useQuery({ queryKey: ["me:isAdmin"], queryFn: () => adminFn() });
   const [tab, setTab] = useState<Tab>("pipeline");
 
-  if (roleQ.isLoading) return <div className="p-8 text-center text-sm text-muted-foreground">جارٍ التحقق...</div>;
+  if (roleQ.isLoading)
+    return <div className="p-8 text-center text-sm text-muted-foreground">جارٍ التحقق...</div>;
   if (!roleQ.data?.isAdmin) {
     return (
       <div className="min-h-screen bg-parchment flex items-center justify-center p-6">
@@ -83,7 +96,10 @@ function DiagnosticHub() {
     <div className="min-h-screen bg-parchment text-ink">
       <header className="border-b border-border bg-card">
         <div className="container-page py-4">
-          <Link to="/admin" className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground">
+          <Link
+            to="/admin"
+            className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
+          >
             <ArrowRight className="h-3 w-3" /> عودة للطلبات
           </Link>
           <div className="mt-2 flex flex-wrap items-center justify-between gap-3">
@@ -102,18 +118,22 @@ function DiagnosticHub() {
           </div>
 
           <nav className="mt-4 flex flex-wrap gap-1">
-            {([
-              ["pipeline", "خط الأنابيب", Network],
-              ["skills", "المهارات والنواتج", BookOpen],
-              ["questions", "بنك الأسئلة", ClipboardCheck],
-              ["sessions", "الجلسات", Play],
-              ["analytics", "تحليل الأسئلة", BarChart3],
-            ] as const).map(([id, label, Icon]) => (
+            {(
+              [
+                ["pipeline", "خط الأنابيب", Network],
+                ["skills", "المهارات والنواتج", BookOpen],
+                ["questions", "بنك الأسئلة", ClipboardCheck],
+                ["sessions", "الجلسات", Play],
+                ["analytics", "تحليل الأسئلة", BarChart3],
+              ] as const
+            ).map(([id, label, Icon]) => (
               <button
                 key={id}
                 onClick={() => setTab(id)}
                 className={`inline-flex items-center gap-2 rounded-lg px-3 py-1.5 text-sm ${
-                  tab === id ? "bg-ink text-parchment" : "text-muted-foreground hover:bg-secondary/50"
+                  tab === id
+                    ? "bg-ink text-parchment"
+                    : "text-muted-foreground hover:bg-secondary/50"
                 }`}
               >
                 <Icon className="h-3.5 w-3.5" /> {label}
@@ -154,7 +174,9 @@ function PipelineTab() {
                 </span>
                 <div className="min-w-0">
                   <p className="font-medium">{s.ar}</p>
-                  <p className="text-[11px] text-muted-foreground" dir="ltr">{s.en}</p>
+                  <p className="text-[11px] text-muted-foreground" dir="ltr">
+                    {s.en}
+                  </p>
                 </div>
               </li>
             ))}
@@ -168,6 +190,21 @@ function PipelineTab() {
 function SkillsTab() {
   const fn = useServerFn(listTopicsAndSkills);
   const q = useQuery({ queryKey: ["diag:skills"], queryFn: () => fn() });
+  const qc = useQueryClient();
+  const invalidate = () => qc.invalidateQueries({ queryKey: ["diag:skills"] });
+
+  const upsertTopicFn = useServerFn(upsertTopic);
+  const deleteTopicFn = useServerFn(deleteTopic);
+  const upsertSkillFn = useServerFn(upsertSkill);
+  const deleteSkillFn = useServerFn(deleteSkill);
+  const upsertOutcomeFn = useServerFn(upsertOutcome);
+  const deleteOutcomeFn = useServerFn(deleteOutcome);
+  const upsertMiscFn = useServerFn(upsertMisconception);
+  const deleteMiscFn = useServerFn(deleteMisconception);
+
+  const [newTopicOpen, setNewTopicOpen] = useState(false);
+  const [skillFormFor, setSkillFormFor] = useState<string | null>(null); // topic_id
+  const [expandedSkill, setExpandedSkill] = useState<string | null>(null);
 
   if (q.isLoading) return <div className="text-sm text-muted-foreground">جارٍ التحميل...</div>;
   if (q.error) return <div className="text-sm text-destructive">{(q.error as Error).message}</div>;
@@ -176,49 +213,181 @@ function SkillsTab() {
 
   return (
     <div className="space-y-6">
+      <div className="flex justify-end">
+        <button
+          onClick={() => setNewTopicOpen((v) => !v)}
+          className="inline-flex items-center gap-1 rounded-lg bg-ink px-3 py-2 text-sm text-parchment"
+        >
+          <Plus className="h-4 w-4" /> موضوع جديد (Knowledge Graph)
+        </button>
+      </div>
+
+      {newTopicOpen && (
+        <TopicForm
+          onCancel={() => setNewTopicOpen(false)}
+          onSaved={async () => {
+            setNewTopicOpen(false);
+            await invalidate();
+          }}
+          upsertFn={upsertTopicFn}
+          sortOrder={topics.length}
+        />
+      )}
+
       {topics.map((t: any) => {
         const topicSkills = skills.filter((s: any) => s.topic_id === t.id);
         return (
           <div key={t.id} className="rounded-2xl border border-border bg-card p-5">
             <div className="flex items-baseline justify-between">
-              <h3 className="font-display text-lg font-bold">{t.name_ar}</h3>
-              <span className="font-mono text-xs text-muted-foreground">{t.code}</span>
+              <div>
+                <h3 className="font-display text-lg font-bold">{t.name_ar}</h3>
+                <span className="font-mono text-xs text-muted-foreground">{t.code}</span>
+              </div>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setSkillFormFor(skillFormFor === t.id ? null : t.id)}
+                  className="inline-flex items-center gap-1 rounded border border-border px-2 py-1 text-xs hover:bg-secondary/50"
+                >
+                  <Plus className="h-3 w-3" /> مهارة (Skill Graph)
+                </button>
+                <button
+                  onClick={async () => {
+                    if (confirm("حذف الموضوع وكل مهاراته؟")) {
+                      await deleteTopicFn({ data: { id: t.id } });
+                      invalidate();
+                    }
+                  }}
+                  className="inline-flex items-center gap-1 rounded border border-red-300 px-2 py-1 text-xs text-red-900 hover:bg-red-50"
+                >
+                  <Trash2 className="h-3 w-3" />
+                </button>
+              </div>
             </div>
+
+            {skillFormFor === t.id && (
+              <div className="mt-3">
+                <SkillForm
+                  topicId={t.id}
+                  onCancel={() => setSkillFormFor(null)}
+                  onSaved={async () => {
+                    setSkillFormFor(null);
+                    await invalidate();
+                  }}
+                  upsertFn={upsertSkillFn}
+                />
+              </div>
+            )}
+
             <div className="mt-4 grid gap-3 md:grid-cols-2">
               {topicSkills.map((s: any) => {
                 const skOutcomes = outcomes.filter((o: any) => o.skill_id === s.id);
                 const skMisc = misconceptions.filter((m: any) => m.skill_id === s.id);
+                const open = expandedSkill === s.id;
                 return (
                   <div key={s.id} className="rounded-lg border border-border bg-parchment p-4">
                     <div className="flex items-center justify-between">
-                      <p className="font-medium">{s.name_ar}</p>
-                      <span className="rounded-full bg-secondary px-2 py-0.5 text-[10px]">{s.bloom}</span>
+                      <button
+                        className="text-start"
+                        onClick={() => setExpandedSkill(open ? null : s.id)}
+                      >
+                        <p className="font-medium">{s.name_ar}</p>
+                      </button>
+                      <div className="flex items-center gap-1">
+                        <span className="rounded-full bg-secondary px-2 py-0.5 text-[10px]">
+                          {s.bloom}
+                        </span>
+                        <button
+                          onClick={async () => {
+                            if (confirm("حذف المهارة؟")) {
+                              await deleteSkillFn({ data: { id: s.id } });
+                              invalidate();
+                            }
+                          }}
+                          className="text-red-700 hover:text-red-900"
+                        >
+                          <Trash2 className="h-3 w-3" />
+                        </button>
+                      </div>
                     </div>
                     <p className="mt-1 text-xs text-muted-foreground">{s.description_ar}</p>
+
                     {skOutcomes.length > 0 && (
                       <div className="mt-3">
                         <p className="text-[10px] font-semibold uppercase text-muted-foreground">
                           نواتج التعلم
                         </p>
-                        <ul className="mt-1 list-disc pr-5 text-xs space-y-0.5">
-                          {skOutcomes.map((o: any) => <li key={o.id}>{o.statement_ar}</li>)}
+                        <ul className="mt-1 space-y-0.5 text-xs">
+                          {skOutcomes.map((o: any) => (
+                            <li key={o.id} className="flex items-center justify-between gap-2">
+                              <span className="list-disc">• {o.statement_ar}</span>
+                              <button
+                                onClick={async () => {
+                                  await deleteOutcomeFn({ data: { id: o.id } });
+                                  invalidate();
+                                }}
+                                className="text-red-700"
+                              >
+                                <Trash2 className="h-3 w-3" />
+                              </button>
+                            </li>
+                          ))}
                         </ul>
                       </div>
                     )}
                     {skMisc.length > 0 && (
                       <div className="mt-3">
                         <p className="text-[10px] font-semibold uppercase text-muted-foreground">
-                          أخطاء شائعة
+                          أخطاء شائعة وفرضيات التشخيص
                         </p>
                         <ul className="mt-1 space-y-1 text-xs">
                           {skMisc.map((m: any) => (
                             <li key={m.id} className="rounded bg-amber-100/60 px-2 py-1">
-                              <span className="font-mono text-[10px]">{m.code}</span> — {m.description_ar}
+                              <div className="flex items-center justify-between gap-2">
+                                <span>
+                                  <span className="font-mono text-[10px]">{m.code}</span> —{" "}
+                                  {m.description_ar}
+                                </span>
+                                <button
+                                  onClick={async () => {
+                                    await deleteMiscFn({ data: { id: m.id } });
+                                    invalidate();
+                                  }}
+                                  className="text-red-700"
+                                >
+                                  <Trash2 className="h-3 w-3" />
+                                </button>
+                              </div>
+                              {m.hypothesis_ar && (
+                                <p className="mt-0.5 text-[11px] italic text-amber-900">
+                                  فرضية: {m.hypothesis_ar}
+                                </p>
+                              )}
                             </li>
                           ))}
                         </ul>
                       </div>
                     )}
+
+                    {open && (
+                      <div className="mt-3 space-y-3 border-t border-border pt-3">
+                        <OutcomeForm
+                          skillId={s.id}
+                          upsertFn={upsertOutcomeFn}
+                          onSaved={invalidate}
+                        />
+                        <MisconceptionForm
+                          skillId={s.id}
+                          upsertFn={upsertMiscFn}
+                          onSaved={invalidate}
+                        />
+                      </div>
+                    )}
+                    <button
+                      onClick={() => setExpandedSkill(open ? null : s.id)}
+                      className="mt-2 text-[11px] text-brand hover:underline"
+                    >
+                      {open ? "إغلاق" : "+ إضافة ناتج تعلم / خطأ شائع"}
+                    </button>
                   </div>
                 );
               })}
@@ -229,6 +398,233 @@ function SkillsTab() {
           </div>
         );
       })}
+      {topics.length === 0 && (
+        <p className="text-center text-sm text-muted-foreground py-8">
+          لا توجد مواضيع بعد — أضف أول موضوع من الأعلى.
+        </p>
+      )}
+    </div>
+  );
+}
+
+function TopicForm({ onCancel, onSaved, upsertFn, sortOrder }: any) {
+  const [code, setCode] = useState("");
+  const [name, setName] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
+  const submit = async () => {
+    setErr(null);
+    setSaving(true);
+    try {
+      await upsertFn({
+        data: { code, name_ar: name, grade: "1AM", kind: "unit", sort_order: sortOrder },
+      });
+      onSaved();
+    } catch (e: any) {
+      setErr(e.message);
+    } finally {
+      setSaving(false);
+    }
+  };
+  return (
+    <div className="rounded-2xl border-2 border-brand/40 bg-card p-4 space-y-2">
+      <div className="flex gap-2">
+        <input
+          value={code}
+          onChange={(e) => setCode(e.target.value)}
+          placeholder="code (مثال: fractions)"
+          className="w-40 rounded-lg border border-input bg-background px-3 py-2 text-sm font-mono"
+        />
+        <input
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          placeholder="اسم الموضوع بالعربية"
+          className="flex-1 rounded-lg border border-input bg-background px-3 py-2 text-sm"
+        />
+      </div>
+      {err && <p className="text-xs text-destructive">{err}</p>}
+      <div className="flex justify-end gap-2">
+        <button onClick={onCancel} className="rounded-lg border border-border px-3 py-1.5 text-sm">
+          إلغاء
+        </button>
+        <button
+          onClick={submit}
+          disabled={saving || !code || !name}
+          className="rounded-lg bg-ink px-3 py-1.5 text-sm text-parchment disabled:opacity-50"
+        >
+          {saving ? "جارٍ الحفظ..." : "حفظ"}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function SkillForm({ topicId, onCancel, onSaved, upsertFn }: any) {
+  const [code, setCode] = useState("");
+  const [name, setName] = useState("");
+  const [desc, setDesc] = useState("");
+  const [bloom, setBloom] = useState("Apply");
+  const [saving, setSaving] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
+  const submit = async () => {
+    setErr(null);
+    setSaving(true);
+    try {
+      await upsertFn({
+        data: {
+          topic_id: topicId,
+          code,
+          name_ar: name,
+          description_ar: desc,
+          bloom,
+          prerequisites: [],
+        },
+      });
+      onSaved();
+    } catch (e: any) {
+      setErr(e.message);
+    } finally {
+      setSaving(false);
+    }
+  };
+  return (
+    <div className="rounded-lg border-2 border-brand/40 bg-parchment p-3 space-y-2">
+      <div className="flex gap-2">
+        <input
+          value={code}
+          onChange={(e) => setCode(e.target.value)}
+          placeholder="SK.CODE"
+          className="w-32 rounded-lg border border-input bg-background px-2 py-1.5 text-xs font-mono"
+        />
+        <input
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          placeholder="اسم المهارة"
+          className="flex-1 rounded-lg border border-input bg-background px-2 py-1.5 text-xs"
+        />
+        <select
+          value={bloom}
+          onChange={(e) => setBloom(e.target.value)}
+          className="rounded-lg border border-input bg-background px-2 py-1.5 text-xs"
+        >
+          {["Remember", "Understand", "Apply", "Analyze", "Evaluate"].map((b) => (
+            <option key={b}>{b}</option>
+          ))}
+        </select>
+      </div>
+      <textarea
+        value={desc}
+        onChange={(e) => setDesc(e.target.value)}
+        placeholder="وصف مختصر"
+        rows={2}
+        className="w-full rounded-lg border border-input bg-background px-2 py-1.5 text-xs"
+      />
+      {err && <p className="text-xs text-destructive">{err}</p>}
+      <div className="flex justify-end gap-2">
+        <button onClick={onCancel} className="rounded-lg border border-border px-2 py-1 text-xs">
+          إلغاء
+        </button>
+        <button
+          onClick={submit}
+          disabled={saving || !code || !name}
+          className="rounded-lg bg-ink px-2 py-1 text-xs text-parchment disabled:opacity-50"
+        >
+          {saving ? "..." : "حفظ"}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function OutcomeForm({ skillId, upsertFn, onSaved }: any) {
+  const [text, setText] = useState("");
+  const [saving, setSaving] = useState(false);
+  const submit = async () => {
+    if (!text.trim()) return;
+    setSaving(true);
+    try {
+      await upsertFn({
+        data: { skill_id: skillId, statement_ar: text, level: "core", sort_order: 0 },
+      });
+      setText("");
+      onSaved();
+    } finally {
+      setSaving(false);
+    }
+  };
+  return (
+    <div className="flex gap-2">
+      <input
+        value={text}
+        onChange={(e) => setText(e.target.value)}
+        placeholder="ناتج تعلم جديد (مرحلة 5)"
+        className="flex-1 rounded-lg border border-input bg-background px-2 py-1.5 text-xs"
+      />
+      <button
+        onClick={submit}
+        disabled={saving}
+        className="rounded-lg border border-border px-2 py-1 text-xs hover:bg-secondary/50"
+      >
+        إضافة
+      </button>
+    </div>
+  );
+}
+
+function MisconceptionForm({ skillId, upsertFn, onSaved }: any) {
+  const [code, setCode] = useState("");
+  const [desc, setDesc] = useState("");
+  const [hyp, setHyp] = useState("");
+  const [saving, setSaving] = useState(false);
+  const submit = async () => {
+    if (!code.trim() || !desc.trim()) return;
+    setSaving(true);
+    try {
+      await upsertFn({
+        data: { skill_id: skillId, code, description_ar: desc, hypothesis_ar: hyp || null },
+      });
+      setCode("");
+      setDesc("");
+      setHyp("");
+      onSaved();
+    } finally {
+      setSaving(false);
+    }
+  };
+  return (
+    <div className="space-y-1.5 rounded bg-amber-50/60 p-2">
+      <p className="text-[10px] font-semibold uppercase text-muted-foreground">
+        خطأ شائع جديد + فرضية التشخيص (مرحلة 6-7)
+      </p>
+      <div className="flex gap-2">
+        <input
+          value={code}
+          onChange={(e) => setCode(e.target.value)}
+          placeholder="code"
+          className="w-28 rounded-lg border border-input bg-background px-2 py-1.5 text-xs font-mono"
+        />
+        <input
+          value={desc}
+          onChange={(e) => setDesc(e.target.value)}
+          placeholder="وصف الخطأ الشائع"
+          className="flex-1 rounded-lg border border-input bg-background px-2 py-1.5 text-xs"
+        />
+      </div>
+      <input
+        value={hyp}
+        onChange={(e) => setHyp(e.target.value)}
+        placeholder="فرضية التشخيص (لماذا يحدث هذا الخطأ)"
+        className="w-full rounded-lg border border-input bg-background px-2 py-1.5 text-xs"
+      />
+      <div className="flex justify-end">
+        <button
+          onClick={submit}
+          disabled={saving}
+          className="rounded-lg border border-border px-2 py-1 text-xs hover:bg-secondary/50"
+        >
+          إضافة
+        </button>
+      </div>
     </div>
   );
 }
@@ -258,6 +654,7 @@ function QuestionsTab() {
   const genFn = useServerFn(generateEquivalentQuestions);
   const qaFn = useServerFn(autoQualityCheck);
   const upsertFn = useServerFn(upsertQuestion);
+  const sampleFn = useServerFn(sampleForExpertReview);
   const qc = useQueryClient();
 
   const qList = useQuery({ queryKey: ["diag:questions"], queryFn: () => listFn() });
@@ -265,13 +662,16 @@ function QuestionsTab() {
   const [filter, setFilter] = useState<string>("");
   const [statusFilter, setStatusFilter] = useState<string>("");
   const [showNew, setShowNew] = useState(false);
+  const [showSample, setShowSample] = useState(false);
 
   const rows = useMemo(() => {
     let r: any[] = qList.data ?? [];
     if (statusFilter) r = r.filter((x) => x.status === statusFilter);
     if (filter) {
       const s = filter.toLowerCase();
-      r = r.filter((x) => x.prompt_ar?.toLowerCase().includes(s) || x.skills?.name_ar?.includes(filter));
+      r = r.filter(
+        (x) => x.prompt_ar?.toLowerCase().includes(s) || x.skills?.name_ar?.includes(filter),
+      );
     }
     return r;
   }, [qList.data, filter, statusFilter]);
@@ -309,8 +709,19 @@ function QuestionsTab() {
           className="rounded-lg border border-input bg-background px-3 py-2 text-sm"
         >
           <option value="">كل الحالات</option>
-          {Object.entries(STATUS_LABEL).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
+          {Object.entries(STATUS_LABEL).map(([k, v]) => (
+            <option key={k} value={k}>
+              {v}
+            </option>
+          ))}
         </select>
+        <button
+          onClick={() => setShowSample((v) => !v)}
+          className="inline-flex items-center gap-1 rounded-lg border border-indigo-300 bg-indigo-50 px-3 py-2 text-sm text-indigo-900"
+          title="مرحلة 12: مراجعة عينة من الأسئلة المولّدة بالذكاء الاصطناعي"
+        >
+          <Users className="h-4 w-4" /> عيّنة مراجعة الخبير
+        </button>
         <button
           onClick={() => setShowNew(true)}
           className="inline-flex items-center gap-1 rounded-lg bg-ink px-3 py-2 text-sm text-parchment"
@@ -318,6 +729,14 @@ function QuestionsTab() {
           <Plus className="h-4 w-4" /> سؤال جديد
         </button>
       </div>
+
+      {showSample && (
+        <ExpertSampleBox
+          sampleFn={sampleFn}
+          reviewFn={reviewFn}
+          onChanged={async () => qc.invalidateQueries({ queryKey: ["diag:questions"] })}
+        />
+      )}
 
       {showNew && (
         <NewQuestionForm
@@ -345,10 +764,14 @@ function QuestionsTab() {
                   <div className="flex flex-wrap items-start justify-between gap-2">
                     <div className="min-w-0 flex-1">
                       <div className="flex flex-wrap items-center gap-2">
-                        <span className={`rounded-full px-2 py-0.5 text-[10px] ${STATUS_TONE[q.status]}`}>
+                        <span
+                          className={`rounded-full px-2 py-0.5 text-[10px] ${STATUS_TONE[q.status]}`}
+                        >
                           {STATUS_LABEL[q.status]}
                         </span>
-                        <span className="rounded-full bg-secondary px-2 py-0.5 text-[10px]">{q.kind}</span>
+                        <span className="rounded-full bg-secondary px-2 py-0.5 text-[10px]">
+                          {q.kind}
+                        </span>
                         {q.skills && (
                           <span className="text-[11px] text-muted-foreground">
                             {q.skills.name_ar} <span className="font-mono">({q.skills.code})</span>
@@ -361,14 +784,18 @@ function QuestionsTab() {
                         )}
                         {q.times_used > 0 && (
                           <span className="text-[10px] text-muted-foreground">
-                            استُخدم {q.times_used}× · نسبة النجاح {Math.round((q.times_correct / q.times_used) * 100)}%
+                            استُخدم {q.times_used}× · نسبة النجاح{" "}
+                            {Math.round((q.times_correct / q.times_used) * 100)}%
                           </span>
                         )}
                       </div>
                       <p className="mt-1 font-medium">{q.prompt_ar}</p>
                       <ol className="mt-1 text-sm text-muted-foreground space-y-0.5">
                         {options.map((o, i) => (
-                          <li key={i} className={i === q.correct_index ? "text-emerald-700 font-medium" : ""}>
+                          <li
+                            key={i}
+                            className={i === q.correct_index ? "text-emerald-700 font-medium" : ""}
+                          >
                             {i === q.correct_index ? "✓" : "•"} {o}
                           </li>
                         ))}
@@ -428,6 +855,98 @@ function QuestionsTab() {
   );
 }
 
+function ExpertSampleBox({ sampleFn, reviewFn, onChanged }: any) {
+  const [sample, setSample] = useState<any[] | null>(null);
+  const [poolSize, setPoolSize] = useState(0);
+  const [loading, setLoading] = useState(false);
+  const [count, setCount] = useState(10);
+
+  const pull = async () => {
+    setLoading(true);
+    try {
+      const res = await sampleFn({ data: { count } });
+      setSample(res.sample ?? []);
+      setPoolSize(res.pool_size ?? 0);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const decide = async (id: string, verdict: "approve" | "reject" | "revise") => {
+    await reviewFn({ data: { question_id: id, verdict, notes: "", review_type: "expert_sample" } });
+    setSample((s) => (s ?? []).filter((q) => q.id !== id));
+    onChanged();
+  };
+
+  return (
+    <div className="rounded-2xl border-2 border-indigo-300 bg-indigo-50/40 p-4 space-y-3">
+      <div className="flex items-center justify-between">
+        <h3 className="font-display font-bold text-indigo-900">
+          مرحلة 12 — عيّنة مراجعة الخبير من الأسئلة المولّدة آليًا
+        </h3>
+        <div className="flex items-center gap-2">
+          <input
+            type="number"
+            min={1}
+            max={50}
+            value={count}
+            onChange={(e) => setCount(Number(e.target.value) || 10)}
+            className="w-16 rounded border border-input bg-background px-2 py-1 text-xs"
+          />
+          <button
+            onClick={pull}
+            disabled={loading}
+            className="inline-flex items-center gap-1 rounded-lg bg-indigo-900 px-3 py-1.5 text-xs text-white disabled:opacity-50"
+          >
+            <RefreshCw className="h-3 w-3" /> {loading ? "جارٍ السحب..." : "سحب عيّنة جديدة"}
+          </button>
+        </div>
+      </div>
+      {sample == null ? (
+        <p className="text-xs text-indigo-900/70">
+          يسحب عينة عشوائية من الأسئلة بحالة "فحص آلي ✓" لم تُسحب من قبل، ليراجعها خبير بدل مراجعة
+          كل سؤال آليًا.
+        </p>
+      ) : sample.length === 0 ? (
+        <p className="text-xs text-indigo-900/70">
+          لا يوجد المزيد من العيّنة الحالية (كان الرصيد المتاح {poolSize} سؤال).
+        </p>
+      ) : (
+        <ul className="space-y-2">
+          {sample.map((q: any) => (
+            <li key={q.id} className="rounded-lg bg-card border border-border p-3 text-sm">
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-xs text-muted-foreground">{q.skills?.name_ar}</span>
+                <div className="flex gap-1">
+                  <button
+                    onClick={() => decide(q.id, "approve")}
+                    className="rounded border border-emerald-300 bg-emerald-50 px-2 py-0.5 text-[11px] text-emerald-900"
+                  >
+                    <Check className="inline h-3 w-3" /> اعتماد خبير
+                  </button>
+                  <button
+                    onClick={() => decide(q.id, "revise")}
+                    className="rounded border border-amber-300 bg-amber-50 px-2 py-0.5 text-[11px] text-amber-900"
+                  >
+                    مراجعة
+                  </button>
+                  <button
+                    onClick={() => decide(q.id, "reject")}
+                    className="rounded border border-red-300 bg-red-50 px-2 py-0.5 text-[11px] text-red-900"
+                  >
+                    <XIcon className="inline h-3 w-3" /> رفض
+                  </button>
+                </div>
+              </div>
+              <p className="mt-1">{q.prompt_ar}</p>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
+
 function NewQuestionForm({ skills, onCancel, onSaved, upsertFn }: any) {
   const [skillId, setSkillId] = useState(skills[0]?.id ?? "");
   const [prompt, setPrompt] = useState("");
@@ -475,7 +994,9 @@ function NewQuestionForm({ skills, onCancel, onSaved, upsertFn }: any) {
         className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm"
       >
         {skills.map((s: any) => (
-          <option key={s.id} value={s.id}>{s.name_ar} ({s.code})</option>
+          <option key={s.id} value={s.id}>
+            {s.name_ar} ({s.code})
+          </option>
         ))}
       </select>
       <textarea
@@ -558,10 +1079,17 @@ function SessionsTab() {
                 <td className="p-3">{s.student_label ?? "—"}</td>
                 <td className="p-3 text-xs">{s.skills?.name_ar ?? "متعدد"}</td>
                 <td className="p-3">
-                  <span className={`rounded-full px-2 py-0.5 text-[10px] ${
-                    s.status === "completed" ? "bg-emerald-100 text-emerald-900" :
-                    s.status === "running" ? "bg-amber-100 text-amber-900" : "bg-secondary"
-                  }`}>{s.status}</span>
+                  <span
+                    className={`rounded-full px-2 py-0.5 text-[10px] ${
+                      s.status === "completed"
+                        ? "bg-emerald-100 text-emerald-900"
+                        : s.status === "running"
+                          ? "bg-amber-100 text-amber-900"
+                          : "bg-secondary"
+                    }`}
+                  >
+                    {s.status}
+                  </span>
                 </td>
                 <td className="p-3 text-xs">
                   {Array.isArray(s.evidence) ? s.evidence.length : 0} إدخال
@@ -586,45 +1114,96 @@ function SessionsTab() {
 
 function AnalyticsTab() {
   const fn = useServerFn(questionAnalytics);
+  const recomputeFn = useServerFn(computeAllQuestionStats);
   const q = useQuery({ queryKey: ["diag:analytics"], queryFn: () => fn() });
+  const qc = useQueryClient();
+  const [recomputing, setRecomputing] = useState(false);
+
   if (q.isLoading) return <div className="text-sm text-muted-foreground">جارٍ التحميل...</div>;
   const rows: any[] = q.data ?? [];
+
+  const recompute = async () => {
+    setRecomputing(true);
+    try {
+      await recomputeFn({});
+      await qc.invalidateQueries({ queryKey: ["diag:analytics"] });
+    } finally {
+      setRecomputing(false);
+    }
+  };
+
   return (
-    <div className="overflow-hidden rounded-2xl border border-border bg-card">
-      <table className="w-full text-sm">
-        <thead className="bg-secondary/50 text-xs">
-          <tr>
-            <th className="p-3 text-start">السؤال</th>
-            <th className="p-3 text-start">المهارة</th>
-            <th className="p-3 text-start">الاستخدام</th>
-            <th className="p-3 text-start">p-value</th>
-            <th className="p-3 text-start">الحالة</th>
-          </tr>
-        </thead>
-        <tbody className="divide-y divide-border">
-          {rows.map((r) => (
-            <tr key={r.id}>
-              <td className="p-3 max-w-[400px] truncate">{r.prompt_ar}</td>
-              <td className="p-3 text-xs">{r.skills?.name_ar ?? "—"}</td>
-              <td className="p-3 text-xs">{r.times_used}</td>
-              <td className="p-3 text-xs">
-                {r.p_value != null ? (
-                  <span className={r.p_value < 0.3 || r.p_value > 0.9 ? "text-amber-700" : "text-emerald-700"}>
-                    {(r.p_value * 100).toFixed(0)}%
-                  </span>
-                ) : "—"}
-              </td>
-              <td className="p-3">
-                <span className={`rounded-full px-2 py-0.5 text-[10px] ${STATUS_TONE[r.status]}`}>
-                  {STATUS_LABEL[r.status]}
-                </span>
-              </td>
+    <div className="space-y-3">
+      <div className="flex justify-end">
+        <button
+          onClick={recompute}
+          disabled={recomputing}
+          className="inline-flex items-center gap-1 rounded-lg border border-border px-3 py-1.5 text-xs hover:bg-secondary/50 disabled:opacity-50"
+        >
+          <RefreshCw className="h-3 w-3" />{" "}
+          {recomputing ? "جارٍ الاحتساب..." : "إعادة احتساب p-value والتمييز"}
+        </button>
+      </div>
+      <div className="overflow-hidden rounded-2xl border border-border bg-card">
+        <table className="w-full text-sm">
+          <thead className="bg-secondary/50 text-xs">
+            <tr>
+              <th className="p-3 text-start">السؤال</th>
+              <th className="p-3 text-start">المهارة</th>
+              <th className="p-3 text-start">الاستخدام</th>
+              <th className="p-3 text-start">p-value</th>
+              <th className="p-3 text-start">مؤشر التمييز</th>
+              <th className="p-3 text-start">الحالة</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
-      <div className="border-t border-border bg-parchment p-3 text-[11px] text-muted-foreground">
-        p-value خارج المجال [30% – 90%] يشير إلى سؤال سهل جدًا أو صعب جدًا — يستحق التحسين أو الاستبعاد (المرحلة ١٧).
+          </thead>
+          <tbody className="divide-y divide-border">
+            {rows.map((r) => (
+              <tr key={r.id}>
+                <td className="p-3 max-w-[400px] truncate">{r.prompt_ar}</td>
+                <td className="p-3 text-xs">{r.skills?.name_ar ?? "—"}</td>
+                <td className="p-3 text-xs">{r.times_used}</td>
+                <td className="p-3 text-xs">
+                  {r.p_value != null ? (
+                    <span
+                      className={
+                        r.p_value < 0.3 || r.p_value > 0.9 ? "text-amber-700" : "text-emerald-700"
+                      }
+                    >
+                      {(r.p_value * 100).toFixed(0)}%
+                    </span>
+                  ) : (
+                    "—"
+                  )}
+                </td>
+                <td className="p-3 text-xs">
+                  {r.discrimination != null ? (
+                    <span
+                      className={
+                        r.discrimination < 0.2 ? "text-red-700 font-medium" : "text-emerald-700"
+                      }
+                    >
+                      {r.discrimination.toFixed(2)}
+                    </span>
+                  ) : (
+                    "—"
+                  )}
+                </td>
+                <td className="p-3">
+                  <span className={`rounded-full px-2 py-0.5 text-[10px] ${STATUS_TONE[r.status]}`}>
+                    {STATUS_LABEL[r.status]}
+                  </span>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        <div className="border-t border-border bg-parchment p-3 text-[11px] text-muted-foreground space-y-1">
+          <p>p-value خارج المجال [30% – 90%] يشير إلى سؤال سهل جدًا أو صعب جدًا.</p>
+          <p>
+            مؤشر تمييز أقل من 0.20 يعني أن السؤال لا يفرّق جيدًا بين المتمكّنين وغيرهم — كلاهما
+            يستحق التحسين أو الاستبعاد (المرحلة ١٧).
+          </p>
+        </div>
       </div>
     </div>
   );
