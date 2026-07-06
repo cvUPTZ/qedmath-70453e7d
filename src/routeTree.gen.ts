@@ -20,6 +20,7 @@ import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authentic
 import { Route as AuthenticatedAdminVisitsRouteImport } from './routes/_authenticated/admin.visits'
 import { Route as AuthenticatedAdminDiagnosticRouteImport } from './routes/_authenticated/admin.diagnostic'
 import { Route as AuthenticatedAdminIdRouteImport } from './routes/_authenticated/admin.$id'
+import { Route as AuthenticatedAdminDiagnosticRunRouteImport } from './routes/_authenticated/admin.diagnostic.run'
 
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
@@ -77,6 +78,12 @@ const AuthenticatedAdminIdRoute = AuthenticatedAdminIdRouteImport.update({
   path: '/$id',
   getParentRoute: () => AuthenticatedAdminRoute,
 } as any)
+const AuthenticatedAdminDiagnosticRunRoute =
+  AuthenticatedAdminDiagnosticRunRouteImport.update({
+    id: '/run',
+    path: '/run',
+    getParentRoute: () => AuthenticatedAdminDiagnosticRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -86,9 +93,10 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AuthenticatedAdminRouteWithChildren
   '/apply/success': typeof ApplySuccessRoute
   '/admin/$id': typeof AuthenticatedAdminIdRoute
-  '/admin/diagnostic': typeof AuthenticatedAdminDiagnosticRoute
+  '/admin/diagnostic': typeof AuthenticatedAdminDiagnosticRouteWithChildren
   '/admin/visits': typeof AuthenticatedAdminVisitsRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
+  '/admin/diagnostic/run': typeof AuthenticatedAdminDiagnosticRunRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -97,9 +105,10 @@ export interface FileRoutesByTo {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/apply/success': typeof ApplySuccessRoute
   '/admin/$id': typeof AuthenticatedAdminIdRoute
-  '/admin/diagnostic': typeof AuthenticatedAdminDiagnosticRoute
+  '/admin/diagnostic': typeof AuthenticatedAdminDiagnosticRouteWithChildren
   '/admin/visits': typeof AuthenticatedAdminVisitsRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
+  '/admin/diagnostic/run': typeof AuthenticatedAdminDiagnosticRunRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -111,9 +120,10 @@ export interface FileRoutesById {
   '/_authenticated/admin': typeof AuthenticatedAdminRouteWithChildren
   '/apply/success': typeof ApplySuccessRoute
   '/_authenticated/admin/$id': typeof AuthenticatedAdminIdRoute
-  '/_authenticated/admin/diagnostic': typeof AuthenticatedAdminDiagnosticRoute
+  '/_authenticated/admin/diagnostic': typeof AuthenticatedAdminDiagnosticRouteWithChildren
   '/_authenticated/admin/visits': typeof AuthenticatedAdminVisitsRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
+  '/_authenticated/admin/diagnostic/run': typeof AuthenticatedAdminDiagnosticRunRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -128,6 +138,7 @@ export interface FileRouteTypes {
     | '/admin/diagnostic'
     | '/admin/visits'
     | '/admin/'
+    | '/admin/diagnostic/run'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -139,6 +150,7 @@ export interface FileRouteTypes {
     | '/admin/diagnostic'
     | '/admin/visits'
     | '/admin'
+    | '/admin/diagnostic/run'
   id:
     | '__root__'
     | '/'
@@ -152,6 +164,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/diagnostic'
     | '/_authenticated/admin/visits'
     | '/_authenticated/admin/'
+    | '/_authenticated/admin/diagnostic/run'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -241,19 +254,41 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminIdRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
+    '/_authenticated/admin/diagnostic/run': {
+      id: '/_authenticated/admin/diagnostic/run'
+      path: '/run'
+      fullPath: '/admin/diagnostic/run'
+      preLoaderRoute: typeof AuthenticatedAdminDiagnosticRunRouteImport
+      parentRoute: typeof AuthenticatedAdminDiagnosticRoute
+    }
   }
 }
 
+interface AuthenticatedAdminDiagnosticRouteChildren {
+  AuthenticatedAdminDiagnosticRunRoute: typeof AuthenticatedAdminDiagnosticRunRoute
+}
+
+const AuthenticatedAdminDiagnosticRouteChildren: AuthenticatedAdminDiagnosticRouteChildren =
+  {
+    AuthenticatedAdminDiagnosticRunRoute: AuthenticatedAdminDiagnosticRunRoute,
+  }
+
+const AuthenticatedAdminDiagnosticRouteWithChildren =
+  AuthenticatedAdminDiagnosticRoute._addFileChildren(
+    AuthenticatedAdminDiagnosticRouteChildren,
+  )
+
 interface AuthenticatedAdminRouteChildren {
   AuthenticatedAdminIdRoute: typeof AuthenticatedAdminIdRoute
-  AuthenticatedAdminDiagnosticRoute: typeof AuthenticatedAdminDiagnosticRoute
+  AuthenticatedAdminDiagnosticRoute: typeof AuthenticatedAdminDiagnosticRouteWithChildren
   AuthenticatedAdminVisitsRoute: typeof AuthenticatedAdminVisitsRoute
   AuthenticatedAdminIndexRoute: typeof AuthenticatedAdminIndexRoute
 }
 
 const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
   AuthenticatedAdminIdRoute: AuthenticatedAdminIdRoute,
-  AuthenticatedAdminDiagnosticRoute: AuthenticatedAdminDiagnosticRoute,
+  AuthenticatedAdminDiagnosticRoute:
+    AuthenticatedAdminDiagnosticRouteWithChildren,
   AuthenticatedAdminVisitsRoute: AuthenticatedAdminVisitsRoute,
   AuthenticatedAdminIndexRoute: AuthenticatedAdminIndexRoute,
 }
