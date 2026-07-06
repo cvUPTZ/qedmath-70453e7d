@@ -219,14 +219,15 @@ export const autoQualityCheck = createServerFn({ method: "POST" })
         prompt: `افحص جودة هذا السؤال التشخيصي (رياضيات، سنة أولى متوسط):
 السؤال: "${q.prompt_ar}"
 الخيارات: ${JSON.stringify(q.options)}
-الإجابة الصحيحة المُعلَنة: ${q.options[q.correct_index]}
+الإجابة الصحيحة المُعلَنة: ${(q.options as any[])?.[q.correct_index]}
 أعِد تقييمًا JSON: هل الصياغة العربية سليمة؟ هل الإجابة المُعلَنة صحيحة رياضيًا؟ هل البدائل مقنعة (تعكس أخطاء شائعة)؟ ثم درجة من 0 إلى 10 وملاحظات.`,
       });
       const status = output.overall_score >= 7 && output.answer_valid ? "ai_reviewed" : "draft";
       await context.supabase
         .from("questions")
-        .update({ status, ai_meta: { ...(q.ai_meta ?? {}), quality: output } })
+        .update({ status, ai_meta: { ...((q.ai_meta as any) ?? {}), quality: output } })
         .eq("id", q.id);
+
       return output;
     } catch (e) {
       if (NoObjectGeneratedError.isInstance(e)) throw new Error("فشل الفحص الآلي");
