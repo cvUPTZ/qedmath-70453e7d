@@ -92,9 +92,13 @@ function AdminList() {
             <p className="text-xs text-muted-foreground">{filtered.length} طلب</p>
           </div>
           <div className="flex shrink-0 items-center gap-2">
+            <Link to="/admin/diagnostic" className="inline-flex items-center gap-2 rounded-lg border border-border bg-background px-3 py-2 text-sm">
+              <Brain className="h-4 w-4" /> التشخيص
+            </Link>
             <Link to="/admin/visits" className="inline-flex items-center gap-2 rounded-lg border border-border bg-background px-3 py-2 text-sm">
               <Globe className="h-4 w-4" /> الزيارات
             </Link>
+
             <button onClick={signOut} className="inline-flex items-center gap-2 rounded-lg border border-border bg-background px-3 py-2 text-sm">
               <LogOut className="h-4 w-4" /> خروج
             </button>
