@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, Outlet, useLocation } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
@@ -60,6 +60,7 @@ const PIPELINE = [
 type Tab = "pipeline" | "skills" | "questions" | "sessions" | "analytics";
 
 function DiagnosticHub() {
+  const location = useLocation();
   const adminFn = useServerFn(isCurrentUserAdmin);
   const roleQ = useQuery({ queryKey: ["me:isAdmin"], queryFn: () => adminFn() });
   const [tab, setTab] = useState<Tab>("pipeline");
@@ -75,6 +76,8 @@ function DiagnosticHub() {
       </div>
     );
   }
+
+  if (location.pathname !== "/admin/diagnostic") return <Outlet />;
 
   return (
     <div className="min-h-screen bg-parchment text-ink">
