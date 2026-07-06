@@ -21,6 +21,7 @@ import { Route as AuthenticatedAdminVisitsRouteImport } from './routes/_authenti
 import { Route as AuthenticatedAdminDiagnosticRouteImport } from './routes/_authenticated/admin.diagnostic'
 import { Route as AuthenticatedAdminIdRouteImport } from './routes/_authenticated/admin.$id'
 import { Route as AuthenticatedAdminDiagnosticRunRouteImport } from './routes/_authenticated/admin.diagnostic.run'
+import { Route as AuthenticatedAdminDiagnosticSessionIdRouteImport } from './routes/_authenticated/admin.diagnostic.session.$id'
 
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
@@ -84,6 +85,12 @@ const AuthenticatedAdminDiagnosticRunRoute =
     path: '/run',
     getParentRoute: () => AuthenticatedAdminDiagnosticRoute,
   } as any)
+const AuthenticatedAdminDiagnosticSessionIdRoute =
+  AuthenticatedAdminDiagnosticSessionIdRouteImport.update({
+    id: '/session/$id',
+    path: '/session/$id',
+    getParentRoute: () => AuthenticatedAdminDiagnosticRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -97,6 +104,7 @@ export interface FileRoutesByFullPath {
   '/admin/visits': typeof AuthenticatedAdminVisitsRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
   '/admin/diagnostic/run': typeof AuthenticatedAdminDiagnosticRunRoute
+  '/admin/diagnostic/session/$id': typeof AuthenticatedAdminDiagnosticSessionIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -109,6 +117,7 @@ export interface FileRoutesByTo {
   '/admin/visits': typeof AuthenticatedAdminVisitsRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
   '/admin/diagnostic/run': typeof AuthenticatedAdminDiagnosticRunRoute
+  '/admin/diagnostic/session/$id': typeof AuthenticatedAdminDiagnosticSessionIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -124,6 +133,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/visits': typeof AuthenticatedAdminVisitsRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
   '/_authenticated/admin/diagnostic/run': typeof AuthenticatedAdminDiagnosticRunRoute
+  '/_authenticated/admin/diagnostic/session/$id': typeof AuthenticatedAdminDiagnosticSessionIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -139,6 +149,7 @@ export interface FileRouteTypes {
     | '/admin/visits'
     | '/admin/'
     | '/admin/diagnostic/run'
+    | '/admin/diagnostic/session/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -151,6 +162,7 @@ export interface FileRouteTypes {
     | '/admin/visits'
     | '/admin'
     | '/admin/diagnostic/run'
+    | '/admin/diagnostic/session/$id'
   id:
     | '__root__'
     | '/'
@@ -165,6 +177,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/visits'
     | '/_authenticated/admin/'
     | '/_authenticated/admin/diagnostic/run'
+    | '/_authenticated/admin/diagnostic/session/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -261,16 +274,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminDiagnosticRunRouteImport
       parentRoute: typeof AuthenticatedAdminDiagnosticRoute
     }
+    '/_authenticated/admin/diagnostic/session/$id': {
+      id: '/_authenticated/admin/diagnostic/session/$id'
+      path: '/session/$id'
+      fullPath: '/admin/diagnostic/session/$id'
+      preLoaderRoute: typeof AuthenticatedAdminDiagnosticSessionIdRouteImport
+      parentRoute: typeof AuthenticatedAdminDiagnosticRoute
+    }
   }
 }
 
 interface AuthenticatedAdminDiagnosticRouteChildren {
   AuthenticatedAdminDiagnosticRunRoute: typeof AuthenticatedAdminDiagnosticRunRoute
+  AuthenticatedAdminDiagnosticSessionIdRoute: typeof AuthenticatedAdminDiagnosticSessionIdRoute
 }
 
 const AuthenticatedAdminDiagnosticRouteChildren: AuthenticatedAdminDiagnosticRouteChildren =
   {
     AuthenticatedAdminDiagnosticRunRoute: AuthenticatedAdminDiagnosticRunRoute,
+    AuthenticatedAdminDiagnosticSessionIdRoute:
+      AuthenticatedAdminDiagnosticSessionIdRoute,
   }
 
 const AuthenticatedAdminDiagnosticRouteWithChildren =
