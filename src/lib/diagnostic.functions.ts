@@ -151,7 +151,7 @@ export const generateEquivalentQuestions = createServerFn({ method: "POST" })
 المهارة المستهدفة: ${gold.skills?.name_ar} — ${gold.skills?.description_ar ?? ""}
 السؤال المرجعي (Gold):
 "${gold.prompt_ar}"
-خياراته: ${JSON.stringify(gold.options)} — الإجابة الصحيحة: ${gold.options[gold.correct_index]}
+خياراته: ${JSON.stringify(gold.options)} — الإجابة الصحيحة: ${(gold.options as any[])?.[gold.correct_index]}
 
 المطلوب: ولّد ${data.count} أسئلة **مكافئة** بنفس مستوى الصعوبة ونفس المهارة، لكن بأرقام أو سياق مختلف.
 لكل سؤال: صياغة عربية واضحة، أربعة خيارات (واحد صحيح وثلاثة مقنعين يعكسون أخطاء شائعة)، مؤشر الإجابة الصحيحة، وسطر تعليل قصير.
