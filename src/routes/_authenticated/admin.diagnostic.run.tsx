@@ -10,6 +10,7 @@ import {
   finishSession,
 } from "@/lib/diagnostic.functions";
 import { ArrowRight, Play, ShieldAlert } from "lucide-react";
+import { DiagnosticGraph } from "@/components/DiagnosticGraph";
 
 export const Route = createFileRoute("/_authenticated/admin/diagnostic/run")({
   component: RunPage,
@@ -25,6 +26,7 @@ type Question = {
   correct_index: number;
   probe_key: string | null;
   probe_tree: any;
+  skill_id?: string | null;
   skills?: { name_ar: string };
 };
 
@@ -145,7 +147,11 @@ function RunPage() {
           <SessionRunner
             session={session}
             onDone={() => setPhase("done")}
+            topics={skillsQ.data?.topics ?? []}
+            skills={skillsQ.data?.skills ?? []}
+            misconceptions={skillsQ.data?.misconceptions ?? []}
           />
+
         )}
 
         {phase === "done" && session && (
@@ -165,7 +171,19 @@ function RunPage() {
   );
 }
 
-function SessionRunner({ session, onDone }: { session: { id: string; questions: Question[] }; onDone: () => void }) {
+function SessionRunner({
+  session,
+  onDone,
+  topics,
+  skills,
+  misconceptions,
+}: {
+  session: { id: string; questions: Question[] };
+  onDone: () => void;
+  topics: any[];
+  skills: any[];
+  misconceptions: any[];
+}) {
   const [mainIdx, setMainIdx] = useState(0);
   const [trail, setTrail] = useState<TrailStep[]>([]);
   const [evidence, setEvidence] = useState<Evidence[]>([]);
@@ -319,8 +337,57 @@ function SessionRunner({ session, onDone }: { session: { id: string; questions: 
   const prompt = isProbe ? current.probeNode.prompt : q.prompt_ar;
   const nodeId = isProbe ? current.probeNode.id : `Q${mainIdx + 1}`;
 
+  // Compute highlight sets for the graph
+  const activeSkillId = (isProbe ? current.origin?.skill_id : q.skill_id) ?? null;
+  const trailByName = new Map<string, { correct: boolean }[]>();
+  for (const t of trail) {
+    if (!t.topic) continue;
+    const arr = trailByName.get(t.topic) ?? [];
+    arr.push({ correct: t.correct });
+    trailByName.set(t.topic, arr);
+  }
+  const nameToSkill = new Map<string, string>();
+  for (const s of skills) nameToSkill.set(s.name_ar, s.id);
+  const visitedSkillIds: string[] = [];
+  const correctSkillIds: string[] = [];
+  const wrongSkillIds: string[] = [];
+  for (const [name, arr] of trailByName) {
+    const sid = nameToSkill.get(name);
+    if (!sid) continue;
+    visitedSkillIds.push(sid);
+    if (arr.every((a) => a.correct)) correctSkillIds.push(sid);
+    else if (arr.some((a) => !a.correct)) wrongSkillIds.push(sid);
+  }
+  const activeMisconceptionIds: string[] = [];
+  if (isProbe && activeSkillId) {
+    for (const m of misconceptions) {
+      if (m.skill_id === activeSkillId) activeMisconceptionIds.push(m.id);
+    }
+  }
+  for (const ev of evidence) {
+    if (!ev.precise) continue;
+    const sid = nameToSkill.get(ev.topic);
+    if (!sid) continue;
+    for (const m of misconceptions) {
+      if (m.skill_id === sid) activeMisconceptionIds.push(m.id);
+    }
+  }
+
   return (
-    <div className="grid gap-6 md:grid-cols-[220px_1fr]">
+    <div className="space-y-4">
+      <DiagnosticGraph
+        topics={topics}
+        skills={skills}
+        misconceptions={misconceptions}
+        activeSkillId={activeSkillId}
+        visitedSkillIds={visitedSkillIds}
+        correctSkillIds={correctSkillIds}
+        wrongSkillIds={wrongSkillIds}
+        activeMisconceptionIds={activeMisconceptionIds}
+        probeActive={isProbe}
+      />
+      <div className="grid gap-6 md:grid-cols-[220px_1fr]">
+
       {/* Trail */}
       <aside className="md:sticky md:top-6 self-start">
         <h2 className="font-display text-sm font-bold">مسار التشخيص</h2>
@@ -383,6 +450,7 @@ function SessionRunner({ session, onDone }: { session: { id: string; questions: 
             {feedback.text}
           </p>
         )}
+      </div>
       </div>
     </div>
   );
