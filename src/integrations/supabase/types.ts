@@ -377,7 +377,6 @@ export type Database = {
           id: string
           notes: string | null
           question_id: string
-          review_type: string
           reviewer_id: string | null
           verdict: string
         }
@@ -386,7 +385,6 @@ export type Database = {
           id?: string
           notes?: string | null
           question_id: string
-          review_type?: string
           reviewer_id?: string | null
           verdict: string
         }
@@ -395,7 +393,6 @@ export type Database = {
           id?: string
           notes?: string | null
           question_id?: string
-          review_type?: string
           reviewer_id?: string | null
           verdict?: string
         }
@@ -423,7 +420,6 @@ export type Database = {
           probe_key: string | null
           probe_tree: Json | null
           prompt_ar: string
-          sampled_for_expert_review: boolean
           skill_id: string | null
           status: Database["public"]["Enums"]["question_status"]
           times_correct: number
@@ -443,7 +439,6 @@ export type Database = {
           probe_key?: string | null
           probe_tree?: Json | null
           prompt_ar: string
-          sampled_for_expert_review?: boolean
           skill_id?: string | null
           status?: Database["public"]["Enums"]["question_status"]
           times_correct?: number
@@ -463,7 +458,6 @@ export type Database = {
           probe_key?: string | null
           probe_tree?: Json | null
           prompt_ar?: string
-          sampled_for_expert_review?: boolean
           skill_id?: string | null
           status?: Database["public"]["Enums"]["question_status"]
           times_correct?: number
@@ -483,44 +477,6 @@ export type Database = {
             columns: ["skill_id"]
             isOneToOne: false
             referencedRelation: "skills"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      question_stats: {
-        Row: {
-          bottom_group_n: number
-          computed_at: string
-          discrimination: number | null
-          n_answers: number
-          p_value: number | null
-          question_id: string
-          top_group_n: number
-        }
-        Insert: {
-          bottom_group_n?: number
-          computed_at?: string
-          discrimination?: number | null
-          n_answers?: number
-          p_value?: number | null
-          question_id: string
-          top_group_n?: number
-        }
-        Update: {
-          bottom_group_n?: number
-          computed_at?: string
-          discrimination?: number | null
-          n_answers?: number
-          p_value?: number | null
-          question_id?: string
-          top_group_n?: number
-        }
-        Relationships: [
-          {
-            foreignKeyName: "question_stats_question_id_fkey"
-            columns: ["question_id"]
-            isOneToOne: true
-            referencedRelation: "questions"
             referencedColumns: ["id"]
           },
         ]
