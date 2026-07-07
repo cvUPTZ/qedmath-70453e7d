@@ -32,12 +32,14 @@ type Props = {
   probeActive?: boolean;
 };
 
-const COL_TOPIC = 720;
-const COL_SKILL = 400;
-const COL_MISC = 90;
+const SVG_W = 560;
+const COL_TOPIC = 470;
+const COL_SKILL = 230;
+const SKILL_W = 120;
+const COL_MISC = 10;
 const ROW_H = 42;
 const PAD_Y = 24;
-const ORBIT_R = 26; // distance a repeated visit to the same skill is pushed out from center
+const ORBIT_R = 22; // distance a repeated visit to the same skill is pushed out from center
 
 export function DiagnosticJourneyGraph({
   topics,
@@ -96,6 +98,13 @@ export function DiagnosticJourneyGraph({
     return { topicPos, skillPos, miscPos, height: Math.max(y + PAD_Y, 260) };
   }, [topics, skills, misconceptions]);
 
+  // Map skill id -> id (for direct matching via skill_id on the question)
+  const idToSkillId = useMemo(() => {
+    const m = new Map<string, string>();
+    for (const s of skills) m.set(s.id, s.id);
+    return m;
+  }, [skills]);
+
   // Map skill name_ar -> id (trail/evidence only carry the name)
   const nameToSkillId = useMemo(() => {
     const m = new Map<string, string>();
@@ -115,18 +124,20 @@ export function DiagnosticJourneyGraph({
       idx: number;
     }[] = [];
     trail.forEach((t, idx) => {
-      const sid = t.topic ? nameToSkillId.get(t.topic) : undefined;
+      // Resolve via name first, then fall back to id-based matching
+      const sid = (t.topic ? nameToSkillId.get(t.topic) : undefined)
+        ?? (t.id ? idToSkillId.get(t.id) : undefined);
       const sp = sid ? layout.skillPos.get(sid) : undefined;
       if (!sp) return;
       const n = visitCount.get(sp.s.id) ?? 0;
       visitCount.set(sp.s.id, n + 1);
       const angle = (n * 65 * Math.PI) / 180 + Math.PI / 2;
-      const cx = COL_SKILL + 70 + (n === 0 ? 0 : Math.cos(angle) * ORBIT_R);
+      const cx = COL_SKILL + SKILL_W / 2 + (n === 0 ? 0 : Math.cos(angle) * ORBIT_R);
       const cy = sp.y + 14 + (n === 0 ? 0 : Math.sin(angle) * ORBIT_R);
       points.push({ x: cx, y: cy, correct: t.correct, probe: !!t.probe, step: t, idx });
     });
     return points;
-  }, [trail, nameToSkillId, layout]);
+  }, [trail, nameToSkillId, idToSkillId, layout]);
 
   // If the last evidence entry pinpointed a misconception, extend the path to it
   const finalMiscPoint = useMemo(() => {
@@ -138,7 +149,7 @@ export function DiagnosticJourneyGraph({
     if (!ms) return null;
     const mp = layout.miscPos.get(ms.id);
     if (!mp) return null;
-    return { x: COL_MISC + 80, y: mp.y + 12, id: ms.id };
+    return { x: COL_MISC + 70, y: mp.y + 12, id: ms.id };
   }, [evidence, nameToSkillId, misconceptions, layout]);
 
   const pathD = useMemo(() => {
@@ -172,7 +183,7 @@ export function DiagnosticJourneyGraph({
       </div>
       <div className="relative w-full overflow-x-auto" style={{ direction: "ltr" }}>
         <svg
-          viewBox={`0 0 800 ${layout.height}`}
+          viewBox={`0 0 ${SVG_W} ${layout.height}`}
           width="100%"
           height={Math.min(layout.height, 520)}
           preserveAspectRatio="xMidYMin meet"
@@ -184,7 +195,7 @@ export function DiagnosticJourneyGraph({
             return (
               <path
                 key={`ts-${s.id}`}
-                d={`M${COL_TOPIC},${t.y + 14} C${(COL_TOPIC + COL_SKILL + 140) / 2},${t.y + 14} ${(COL_TOPIC + COL_SKILL + 140) / 2},${y + 14} ${COL_SKILL + 140},${y + 14}`}
+                d={`M${COL_TOPIC},${t.y + 14} C${(COL_TOPIC + COL_SKILL + SKILL_W) / 2},${t.y + 14} ${(COL_TOPIC + COL_SKILL + SKILL_W) / 2},${y + 14} ${COL_SKILL + SKILL_W},${y + 14}`}
                 fill="none"
                 stroke="#cbd5e1"
                 strokeWidth={1}
@@ -195,9 +206,9 @@ export function DiagnosticJourneyGraph({
 
           {layout.topicPos.map(({ t, y }) => (
             <g key={t.id} transform={`translate(${COL_TOPIC}, ${y})`}>
-              <rect width="72" height="28" rx="14" className="fill-ink" />
-              <text x="36" y="18" textAnchor="middle" className="fill-parchment" style={{ fontSize: 10 }}>
-                {truncate(t.name_ar, 10)}
+              <rect width="80" height="28" rx="14" className="fill-ink" />
+              <text x="40" y="18" textAnchor="middle" className="fill-parchment" style={{ fontSize: 10 }}>
+                {truncate(t.name_ar, 12)}
               </text>
               <title>{t.name_ar}</title>
             </g>
@@ -209,9 +220,9 @@ export function DiagnosticJourneyGraph({
             const fill = isActive ? (probeActive ? "#f59e0b" : "hsl(var(--brand, 30 90% 55%))") : isVisited ? "#94a3b8" : "#e5e7eb";
             return (
               <g key={s.id} transform={`translate(${COL_SKILL}, ${y})`}>
-                <rect width="140" height="28" rx="6" fill={fill} stroke={isActive ? "#0f172a" : "transparent"} strokeWidth={1.5} />
-                <text x="70" y="18" textAnchor="middle" style={{ fontSize: 10 }} className={isActive || isVisited ? "fill-white" : "fill-ink"}>
-                  {truncate(s.name_ar, 20)}
+                <rect width={SKILL_W} height="28" rx="6" fill={fill} stroke={isActive ? "#0f172a" : "transparent"} strokeWidth={1.5} />
+                <text x={SKILL_W / 2} y="18" textAnchor="middle" style={{ fontSize: 10 }} className={isActive || isVisited ? "fill-white" : "fill-ink"}>
+                  {truncate(s.name_ar, 16)}
                 </text>
                 <title>{`${s.code} — ${s.name_ar}`}</title>
               </g>

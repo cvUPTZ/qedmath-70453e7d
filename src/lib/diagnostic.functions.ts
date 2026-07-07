@@ -470,7 +470,7 @@ export const startSession = createServerFn({ method: "POST" })
     // pick approved questions: filter by skill if given, else broad
     const query = context.supabase
       .from("questions")
-      .select("*")
+      .select("*, skills(name_ar, code)")
       .in("status", ["approved", "expert_reviewed"])
       .eq("kind", "gold");
     if (data.skill_id) query.eq("skill_id", data.skill_id);
