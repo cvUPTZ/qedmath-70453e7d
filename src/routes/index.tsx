@@ -308,10 +308,17 @@ function LandingPage() {
 }
 
 function SiteHeader() {
+  const links = [
+    { href: "#vision", label: "الرؤية" },
+    { href: "#principles", label: "المبادئ" },
+    { href: "#who", label: "من نبحث عنه" },
+    { href: "#journey", label: "الرحلة" },
+    { href: "#future", label: "المستقبل" },
+  ];
   return (
-    <header className="border-b border-ink/10 bg-parchment">
-      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
-        <Link to="/" className="flex items-baseline gap-3">
+    <header className="sticky top-0 z-40 border-b border-ink/10 bg-parchment/90 backdrop-blur">
+      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-6 px-6">
+        <Link to="/" className="flex items-baseline gap-3 shrink-0">
           <span className="font-display text-2xl font-bold tracking-tight text-ink">
             QED
           </span>
@@ -319,9 +326,20 @@ function SiteHeader() {
             برنامج الخبراء التربويين
           </span>
         </Link>
+        <nav className="hidden md:flex items-center gap-6 text-sm text-muted-foreground">
+          {links.map((l) => (
+            <a
+              key={l.href}
+              href={l.href}
+              className="transition-colors hover:text-ink"
+            >
+              {l.label}
+            </a>
+          ))}
+        </nav>
         <Link
           to="/apply"
-          className="border border-ink/20 px-4 py-2 text-xs font-medium tracking-wide text-ink transition-colors hover:bg-ink hover:text-parchment"
+          className="border border-ink/20 px-4 py-2 text-xs font-medium tracking-wide text-ink transition-colors hover:bg-ink hover:text-parchment shrink-0"
         >
           التقديم
         </Link>
