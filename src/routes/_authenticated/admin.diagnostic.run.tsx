@@ -374,43 +374,57 @@ function SessionRunner({
   }
 
   return (
-    <div className="space-y-4">
-      <DiagnosticGraph
-        topics={topics}
-        skills={skills}
-        misconceptions={misconceptions}
-        activeSkillId={activeSkillId}
-        visitedSkillIds={visitedSkillIds}
-        correctSkillIds={correctSkillIds}
-        wrongSkillIds={wrongSkillIds}
-        activeMisconceptionIds={activeMisconceptionIds}
-        probeActive={isProbe}
-      />
-      <div className="grid gap-6 md:grid-cols-[220px_1fr]">
-
-      {/* Trail */}
-      <aside className="md:sticky md:top-6 self-start">
-        <h2 className="font-display text-sm font-bold">مسار التشخيص</h2>
-        <p className="text-[10px] text-muted-foreground mb-3">الأصفر = probe جذري</p>
-        <div className="space-y-2 border-r-2 border-border pr-3">
-          {trail.map((t, i) => (
-            <div key={i} className={`text-xs ${t.probe ? "mr-3 border-r-2 border-dashed border-amber-400 pr-3" : ""}`}>
-              <div className="flex items-center gap-1">
-                <span className={`h-2 w-2 rounded-full ${
-                  t.probe ? "bg-amber-400" : t.correct ? "bg-emerald-600" : "bg-red-500"
-                }`} />
-                <span className="font-mono text-[10px]">{t.id.slice(0, 8)}</span>
-                {t.probeTag && (
-                  <span className="rounded bg-amber-100 px-1 py-0.5 text-[9px] text-amber-900">{t.probeTag}</span>
-                )}
-              </div>
-              <p className="mt-0.5 text-muted-foreground truncate">{t.label}</p>
-            </div>
-          ))}
+    <div className="grid gap-6 md:grid-cols-[minmax(0,1fr)_400px]">
+      {/* Combined map + trail on the visual right (first column in RTL) */}
+      <aside className="md:sticky md:top-6 self-start space-y-3">
+        <DiagnosticGraph
+          topics={topics}
+          skills={skills}
+          misconceptions={misconceptions}
+          activeSkillId={activeSkillId}
+          visitedSkillIds={visitedSkillIds}
+          correctSkillIds={correctSkillIds}
+          wrongSkillIds={wrongSkillIds}
+          activeMisconceptionIds={activeMisconceptionIds}
+          probeActive={isProbe}
+        />
+        <div className="rounded-2xl border border-border bg-card p-3">
+          <h2 className="mb-2 font-display text-xs font-bold">مسار التشخيص</h2>
+          {trail.length === 0 && (
+            <p className="text-[10px] text-muted-foreground">لم تبدأ خطوات بعد.</p>
+          )}
+          <ol className="space-y-1.5">
+            {trail.map((t, i) => (
+              <li
+                key={i}
+                className={`text-[11px] flex items-start gap-2 ${
+                  t.probe ? "mr-3 border-r-2 border-dashed border-amber-400 pr-2" : ""
+                }`}
+              >
+                <span
+                  className={`mt-1 h-2 w-2 shrink-0 rounded-full ${
+                    t.probe ? "bg-amber-400" : t.correct ? "bg-emerald-600" : "bg-red-500"
+                  }`}
+                />
+                <span className="flex-1 min-w-0">
+                  <span className="flex items-center gap-1">
+                    <span className="font-mono text-[9px] text-muted-foreground">{t.id.slice(0, 8)}</span>
+                    {t.probeTag && (
+                      <span className="rounded bg-amber-100 px-1 py-0.5 text-[9px] text-amber-900">
+                        {t.probeTag}
+                      </span>
+                    )}
+                  </span>
+                  <span className="block text-muted-foreground truncate">{t.label}</span>
+                </span>
+              </li>
+            ))}
+          </ol>
         </div>
       </aside>
 
       {/* Card */}
+
       <div className="rounded-2xl border border-border bg-card p-6">
         {isProbe && (
           <div className="mb-4 flex items-start gap-2 rounded border border-amber-300 bg-amber-50 p-3">
@@ -450,7 +464,6 @@ function SessionRunner({
             {feedback.text}
           </p>
         )}
-      </div>
       </div>
     </div>
   );
