@@ -200,7 +200,7 @@ function LandingPage() {
       </section>
 
       {/* WHO WE SEEK */}
-      <section className="bg-ink text-parchment">
+      <section id="who" className="scroll-mt-20 bg-ink text-parchment">
         <div className="mx-auto grid max-w-6xl gap-16 px-6 py-24 md:grid-cols-12 md:py-32">
           <div className="md:col-span-5">
             <span className="font-mono text-[11px] uppercase tracking-[0.25em] text-brand-accent">
