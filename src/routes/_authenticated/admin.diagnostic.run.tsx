@@ -147,7 +147,11 @@ function RunPage() {
           <SessionRunner
             session={session}
             onDone={() => setPhase("done")}
+            topics={skillsQ.data?.topics ?? []}
+            skills={skillsQ.data?.skills ?? []}
+            misconceptions={skillsQ.data?.misconceptions ?? []}
           />
+
         )}
 
         {phase === "done" && session && (
