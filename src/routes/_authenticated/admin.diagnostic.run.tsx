@@ -3,20 +3,13 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { isCurrentUserAdmin } from "@/lib/applications.functions";
-import {
-  listTopicsAndSkills,
-  startSession,
-  recordAnswer,
-  finishSession,
-} from "@/lib/diagnostic.functions";
+import { listTopicsAndSkills, startSession, recordAnswer, finishSession } from "@/lib/diagnostic.functions";
 import { ArrowRight, Play, ShieldAlert } from "lucide-react";
-import { DiagnosticGraph } from "@/components/DiagnosticGraph";
+import { DiagnosticJourneyGraph } from "@/components/DiagnosticJourneyGraph";
 
 export const Route = createFileRoute("/_authenticated/admin/diagnostic/run")({
   component: RunPage,
-  errorComponent: ({ error }) => (
-    <div className="p-8 text-center text-sm text-destructive">{error.message}</div>
-  ),
+  errorComponent: ({ error }) => <div className="p-8 text-center text-sm text-destructive">{error.message}</div>,
 });
 
 type Question = {
@@ -96,7 +89,10 @@ function RunPage() {
     <div className="min-h-screen bg-parchment text-ink">
       <header className="border-b border-border bg-card">
         <div className="container-page py-4">
-          <Link to="/admin/diagnostic" className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground">
+          <Link
+            to="/admin/diagnostic"
+            className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
+          >
             <ArrowRight className="h-3 w-3" /> عودة للوحة التشخيص
           </Link>
           <h1 className="mt-1 font-display text-xl font-bold">جلسة تشخيص</h1>
@@ -115,7 +111,9 @@ function RunPage() {
               >
                 <option value="">كل المهارات المعتمدة</option>
                 {skills.map((s: any) => (
-                  <option key={s.id} value={s.id}>{s.name_ar} ({s.code})</option>
+                  <option key={s.id} value={s.id}>
+                    {s.name_ar} ({s.code})
+                  </option>
                 ))}
               </select>
             </div>
@@ -151,7 +149,6 @@ function RunPage() {
             skills={skillsQ.data?.skills ?? []}
             misconceptions={skillsQ.data?.misconceptions ?? []}
           />
-
         )}
 
         {phase === "done" && session && (
@@ -187,7 +184,9 @@ function SessionRunner({
   const [mainIdx, setMainIdx] = useState(0);
   const [trail, setTrail] = useState<TrailStep[]>([]);
   const [evidence, setEvidence] = useState<Evidence[]>([]);
-  const [current, setCurrent] = useState<{ kind: "main" | "probe"; probeNode?: any; origin?: Question }>({ kind: "main" });
+  const [current, setCurrent] = useState<{ kind: "main" | "probe"; probeNode?: any; origin?: Question }>({
+    kind: "main",
+  });
   const [feedback, setFeedback] = useState<{ text: string; ok: boolean } | null>(null);
   const [locked, setLocked] = useState(false);
   const startedAt = useRef(Date.now());
@@ -204,10 +203,11 @@ function SessionRunner({
   }, [mainIdx, current.kind, current.probeNode?.id]);
 
   const shuffled = useMemo(() => {
-    const items = (current.kind === "probe" ? current.probeNode : q)?.options?.map((label: string, i: number) => ({
-      label,
-      isCorrect: i === (current.kind === "probe" ? current.probeNode.correct : q.correct_index),
-    })) ?? [];
+    const items =
+      (current.kind === "probe" ? current.probeNode : q)?.options?.map((label: string, i: number) => ({
+        label,
+        isCorrect: i === (current.kind === "probe" ? current.probeNode.correct : q.correct_index),
+      })) ?? [];
     // simple fisher-yates
     const arr = [...items];
     for (let i = arr.length - 1; i > 0; i--) {
@@ -215,7 +215,7 @@ function SessionRunner({
       [arr[i], arr[j]] = [arr[j], arr[i]];
     }
     return arr;
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mainIdx, current.kind, current.probeNode?.id]);
 
   const advanceMain = async (finalEvidence: Evidence[], finalTrail: TrailStep[]) => {
@@ -233,7 +233,12 @@ function SessionRunner({
     if (locked) return;
     setLocked(true);
     const ms = Date.now() - startedAt.current;
-    const step: TrailStep = { id: q.id, label: q.prompt_ar.slice(0, 40), topic: q.skills?.name_ar ?? "", correct: isCorrect };
+    const step: TrailStep = {
+      id: q.id,
+      label: q.prompt_ar.slice(0, 40),
+      topic: q.skills?.name_ar ?? "",
+      correct: isCorrect,
+    };
     const newTrail = [...trail, step];
     setTrail(newTrail);
     setFeedback({ text: isCorrect ? "إجابة صحيحة" : "غير صحيحة", ok: isCorrect });
@@ -337,90 +342,24 @@ function SessionRunner({
   const prompt = isProbe ? current.probeNode.prompt : q.prompt_ar;
   const nodeId = isProbe ? current.probeNode.id : `Q${mainIdx + 1}`;
 
-  // Compute highlight sets for the graph
+  // DiagnosticJourneyGraph derives visited/correct/wrong/misconception state
+  // internally from trail + evidence, so no separate highlight-set computation
+  // is needed here anymore.
   const activeSkillId = (isProbe ? current.origin?.skill_id : q.skill_id) ?? null;
-  const trailByName = new Map<string, { correct: boolean }[]>();
-  for (const t of trail) {
-    if (!t.topic) continue;
-    const arr = trailByName.get(t.topic) ?? [];
-    arr.push({ correct: t.correct });
-    trailByName.set(t.topic, arr);
-  }
-  const nameToSkill = new Map<string, string>();
-  for (const s of skills) nameToSkill.set(s.name_ar, s.id);
-  const visitedSkillIds: string[] = [];
-  const correctSkillIds: string[] = [];
-  const wrongSkillIds: string[] = [];
-  for (const [name, arr] of trailByName) {
-    const sid = nameToSkill.get(name);
-    if (!sid) continue;
-    visitedSkillIds.push(sid);
-    if (arr.every((a) => a.correct)) correctSkillIds.push(sid);
-    else if (arr.some((a) => !a.correct)) wrongSkillIds.push(sid);
-  }
-  const activeMisconceptionIds: string[] = [];
-  if (isProbe && activeSkillId) {
-    for (const m of misconceptions) {
-      if (m.skill_id === activeSkillId) activeMisconceptionIds.push(m.id);
-    }
-  }
-  for (const ev of evidence) {
-    if (!ev.precise) continue;
-    const sid = nameToSkill.get(ev.topic);
-    if (!sid) continue;
-    for (const m of misconceptions) {
-      if (m.skill_id === sid) activeMisconceptionIds.push(m.id);
-    }
-  }
 
   return (
     <div className="grid gap-6 md:grid-cols-[minmax(0,1fr)_400px]">
-      {/* Combined map + trail on the visual right (first column in RTL) */}
+      {/* Merged map + trail path on the visual right (first column in RTL) */}
       <aside className="md:sticky md:top-6 self-start space-y-3">
-        <DiagnosticGraph
+        <DiagnosticJourneyGraph
           topics={topics}
           skills={skills}
           misconceptions={misconceptions}
+          trail={trail}
+          evidence={evidence}
           activeSkillId={activeSkillId}
-          visitedSkillIds={visitedSkillIds}
-          correctSkillIds={correctSkillIds}
-          wrongSkillIds={wrongSkillIds}
-          activeMisconceptionIds={activeMisconceptionIds}
           probeActive={isProbe}
         />
-        <div className="rounded-2xl border border-border bg-card p-3">
-          <h2 className="mb-2 font-display text-xs font-bold">مسار التشخيص</h2>
-          {trail.length === 0 && (
-            <p className="text-[10px] text-muted-foreground">لم تبدأ خطوات بعد.</p>
-          )}
-          <ol className="space-y-1.5">
-            {trail.map((t, i) => (
-              <li
-                key={i}
-                className={`text-[11px] flex items-start gap-2 ${
-                  t.probe ? "mr-3 border-r-2 border-dashed border-amber-400 pr-2" : ""
-                }`}
-              >
-                <span
-                  className={`mt-1 h-2 w-2 shrink-0 rounded-full ${
-                    t.probe ? "bg-amber-400" : t.correct ? "bg-emerald-600" : "bg-red-500"
-                  }`}
-                />
-                <span className="flex-1 min-w-0">
-                  <span className="flex items-center gap-1">
-                    <span className="font-mono text-[9px] text-muted-foreground">{t.id.slice(0, 8)}</span>
-                    {t.probeTag && (
-                      <span className="rounded bg-amber-100 px-1 py-0.5 text-[9px] text-amber-900">
-                        {t.probeTag}
-                      </span>
-                    )}
-                  </span>
-                  <span className="block text-muted-foreground truncate">{t.label}</span>
-                </span>
-              </li>
-            ))}
-          </ol>
-        </div>
       </aside>
 
       {/* Card */}
@@ -431,7 +370,9 @@ function SessionRunner({
             <span className="mt-1 h-2 w-2 rounded-full bg-amber-500" />
             <div>
               <p className="text-sm font-medium text-amber-900">لنستوضح نقطة صغيرة قبل المتابعة</p>
-              <p className="text-[10px] text-amber-800" dir="ltr">Root-cause probe · {current.origin?.probe_key}</p>
+              <p className="text-[10px] text-amber-800" dir="ltr">
+                Root-cause probe · {current.origin?.probe_key}
+              </p>
             </div>
           </div>
         )}
@@ -460,9 +401,7 @@ function SessionRunner({
         </div>
 
         {feedback && (
-          <p className={`mt-4 text-sm ${feedback.ok ? "text-emerald-700" : "text-red-700"}`}>
-            {feedback.text}
-          </p>
+          <p className={`mt-4 text-sm ${feedback.ok ? "text-emerald-700" : "text-red-700"}`}>{feedback.text}</p>
         )}
       </div>
     </div>
