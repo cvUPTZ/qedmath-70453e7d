@@ -423,9 +423,8 @@ function SessionRunner({
         </div>
       </aside>
 
-      </aside>
-
       {/* Card */}
+
       <div className="rounded-2xl border border-border bg-card p-6">
         {isProbe && (
           <div className="mb-4 flex items-start gap-2 rounded border border-amber-300 bg-amber-50 p-3">
