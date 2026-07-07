@@ -262,7 +262,7 @@ function LandingPage() {
       </section>
 
       {/* FUTURE */}
-      <section className="bg-parchment">
+      <section id="future" className="scroll-mt-20 bg-parchment">
         <div className="mx-auto max-w-4xl px-6 py-24 text-center md:py-32">
           <span className="font-mono text-[11px] uppercase tracking-[0.25em] text-brand-accent">
             § ٥ · الرؤية المستقبلية
