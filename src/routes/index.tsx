@@ -232,7 +232,7 @@ function LandingPage() {
       </section>
 
       {/* JOURNEY */}
-      <section className="border-b border-ink/10 bg-card">
+      <section id="journey" className="scroll-mt-20 border-b border-ink/10 bg-card">
         <div className="mx-auto max-w-6xl px-6 py-24 md:py-32">
           <span className="font-mono text-[11px] uppercase tracking-[0.25em] text-brand-accent">
             § ٤ · الرحلة
