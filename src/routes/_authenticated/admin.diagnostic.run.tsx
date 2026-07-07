@@ -10,6 +10,7 @@ import {
   finishSession,
 } from "@/lib/diagnostic.functions";
 import { ArrowRight, Play, ShieldAlert } from "lucide-react";
+import { DiagnosticGraph } from "@/components/DiagnosticGraph";
 
 export const Route = createFileRoute("/_authenticated/admin/diagnostic/run")({
   component: RunPage,
