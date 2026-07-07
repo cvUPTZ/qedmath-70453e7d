@@ -171,7 +171,19 @@ function RunPage() {
   );
 }
 
-function SessionRunner({ session, onDone }: { session: { id: string; questions: Question[] }; onDone: () => void }) {
+function SessionRunner({
+  session,
+  onDone,
+  topics,
+  skills,
+  misconceptions,
+}: {
+  session: { id: string; questions: Question[] };
+  onDone: () => void;
+  topics: any[];
+  skills: any[];
+  misconceptions: any[];
+}) {
   const [mainIdx, setMainIdx] = useState(0);
   const [trail, setTrail] = useState<TrailStep[]>([]);
   const [evidence, setEvidence] = useState<Evidence[]>([]);
