@@ -92,6 +92,9 @@ function AdminList() {
             <p className="text-xs text-muted-foreground">{filtered.length} طلب</p>
           </div>
           <div className="flex shrink-0 items-center gap-2">
+            <Link to="/admin/meeting" className="inline-flex items-center gap-2 rounded-lg border border-border bg-background px-3 py-2 text-sm">
+              <Users className="h-4 w-4" /> اجتماع
+            </Link>
             <Link to="/admin/diagnostic" className="inline-flex items-center gap-2 rounded-lg border border-border bg-background px-3 py-2 text-sm">
               <Brain className="h-4 w-4" /> التشخيص
             </Link>
