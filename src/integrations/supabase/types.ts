@@ -377,6 +377,7 @@ export type Database = {
           id: string
           notes: string | null
           question_id: string
+          review_type: string
           reviewer_id: string | null
           verdict: string
         }
@@ -385,6 +386,7 @@ export type Database = {
           id?: string
           notes?: string | null
           question_id: string
+          review_type?: string
           reviewer_id?: string | null
           verdict: string
         }
@@ -393,6 +395,7 @@ export type Database = {
           id?: string
           notes?: string | null
           question_id?: string
+          review_type?: string
           reviewer_id?: string | null
           verdict?: string
         }
@@ -401,6 +404,38 @@ export type Database = {
             foreignKeyName: "question_reviews_question_id_fkey"
             columns: ["question_id"]
             isOneToOne: false
+            referencedRelation: "questions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      question_stats: {
+        Row: {
+          computed_at: string
+          discrimination: number | null
+          p_value: number | null
+          question_id: string
+          sample_size: number
+        }
+        Insert: {
+          computed_at?: string
+          discrimination?: number | null
+          p_value?: number | null
+          question_id: string
+          sample_size?: number
+        }
+        Update: {
+          computed_at?: string
+          discrimination?: number | null
+          p_value?: number | null
+          question_id?: string
+          sample_size?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "question_stats_question_id_fkey"
+            columns: ["question_id"]
+            isOneToOne: true
             referencedRelation: "questions"
             referencedColumns: ["id"]
           },
@@ -420,6 +455,7 @@ export type Database = {
           probe_key: string | null
           probe_tree: Json | null
           prompt_ar: string
+          sampled_for_expert_review: boolean
           skill_id: string | null
           status: Database["public"]["Enums"]["question_status"]
           times_correct: number
@@ -439,6 +475,7 @@ export type Database = {
           probe_key?: string | null
           probe_tree?: Json | null
           prompt_ar: string
+          sampled_for_expert_review?: boolean
           skill_id?: string | null
           status?: Database["public"]["Enums"]["question_status"]
           times_correct?: number
@@ -458,6 +495,7 @@ export type Database = {
           probe_key?: string | null
           probe_tree?: Json | null
           prompt_ar?: string
+          sampled_for_expert_review?: boolean
           skill_id?: string | null
           status?: Database["public"]["Enums"]["question_status"]
           times_correct?: number
