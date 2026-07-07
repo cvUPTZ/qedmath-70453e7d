@@ -26,6 +26,7 @@ type Question = {
   correct_index: number;
   probe_key: string | null;
   probe_tree: any;
+  skill_id?: string | null;
   skills?: { name_ar: string };
 };
 
