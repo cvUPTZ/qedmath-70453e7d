@@ -466,7 +466,6 @@ function SessionRunner({
           </p>
         )}
       </div>
-      </div>
     </div>
   );
 }
